@@ -16,7 +16,10 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors({ origin: '*', credentials: true }));
+app.use(cors({ 
+  origin: ['http://localhost:5173', 'https://palegreen-echidna-749052.hostingersite.com'], 
+  credentials: true 
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
