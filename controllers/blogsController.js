@@ -1,38 +1,99 @@
 import Blog from '../models/Blog.js';
-import { uploadImage } from '../utils/cloudinary.js';
+import { uploadImage, uploadContentImages } from '../utils/cloudinary.js';
+import { slugify, generateUniqueSlug } from '../utils/slugify.js';
 
 export const getBlogs = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 9;
-    const skip = (page - 1) * limit;
+    const {
+      page = 1,
+      limit = 9,
+      q, // search term
+      category,
+      status = 'published',
+      tag,
+      sort = 'createdAt:-1' // 'views:-1', 'readTime:1'
+    } = req.query;
 
-    const totalCount = await Blog.countDocuments();
-    const blogs = await Blog.find()
-      .sort({ createdAt: -1 })
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Build filter
+    const filter = { status };
+    if (q) {
+      filter.$or = [
+        { title: { $regex: q, $options: 'i' } },
+        { shortDescription: { $regex: q, $options: 'i' } },
+        { content: { $regex: q, $options: 'i' } },
+        { tags: { $in: [new RegExp(q, 'i')] } }
+      ];
+    }
+    if (category) filter.category = category;
+    if (tag) filter.tags = tag;
+
+    const totalCount = await Blog.countDocuments(filter);
+
+    // Parse sort
+    const [sortField, sortOrder] = sort.split(':');
+    const sortObj = { [sortField]: sortOrder === '-1' ? -1 : 1 };
+
+    const blogs = await Blog.find(filter)
+      .select('-__v') // Hide Mongo internals
+      .sort(sortObj)
       .skip(skip)
-      .limit(limit);
+      .limit(limitNum)
+      .lean(); // Faster for read-only
 
-    const totalPages = Math.ceil(totalCount / limit);
+    const totalPages = Math.ceil(totalCount / limitNum);
 
     res.json({
       blogs,
-      currentPage: page,
-      totalPages,
-      totalCount,
-      hasNextPage: page < totalPages,
-      hasPrevPage: page > 1,
-      limit
+      pagination: {
+        currentPage: pageNum,
+        totalPages,
+        totalCount,
+        hasNextPage: pageNum < totalPages,
+        hasPrevPage: pageNum > 1,
+        limit: limitNum
+      }
     });
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).json({ message: 'Server error during search' });
+  }
+};
+
+// SEO: GET /api/blogs/slug/:slug
+export const getBlogBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const blog = await Blog.findOne({ slug })
+      .select('-__v')
+      .lean();
+      
+    if (!blog) return res.status(404).json({ message: 'Blog not found' });
+    
+    // Increment views
+    await Blog.findOneAndUpdate(
+      { slug },
+      { $inc: { views: 1 } }
+    );
+    
+    res.json(blog);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export const getBlog = async (req, res) => {
+// Legacy ID support
+export const getBlogById = async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.id);
+    const blog = await Blog.findById(req.params.id)
+      .select('-__v')
+      .lean();
     if (!blog) return res.status(404).json({ message: 'Blog not found' });
+    
+    await Blog.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
     res.json(blog);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -41,73 +102,142 @@ export const getBlog = async (req, res) => {
 
 export const createBlog = async (req, res) => {
   try {
-    console.log('📝 Creating blog:', { title: req.body.title, hasFile: !!req.file, filePath: req.file?.path });
-    
-    const { title, excerpt, content, readTime: readTimeStr } = req.body;
-    
-    // Parse readTime: "5 min" → 5
-    let readTimeNum = 5;
-    if (readTimeStr) {
-      readTimeNum = parseInt(readTimeStr.match(/\\d+/)?.[0] || '5', 10);
+    const {
+      title,
+      shortDescription,
+      content,
+      category,
+      tags = [],
+      author = 'Admin',
+      status = 'draft',
+      seoTitle,
+      seoDescription
+    } = req.body;
+
+    if (!title || !content || !category) {
+      return res.status(400).json({ message: 'Title, content, and category required' });
     }
-    
-    let image = '';
-    if (req.file) {
-      const result = await uploadImage(req.file.path);
-      image = result.secure_url;
+
+    // Parse tags array
+    const tagsArray = Array.isArray(tags) ? tags : JSON.parse(tags || '[]');
+
+    // Auto-generate unique slug
+    const slug = await generateUniqueSlug(Blog, title);
+
+    // Calculate read time
+    const words = content.replace(/<[^>]*>/g, '').split(/\s+/).length;
+    const readTime = Math.ceil(words / 250);
+
+    // Upload featured image
+    let featuredImage = '';
+    if (req.files?.featuredImage?.[0]) {
+      const result = await uploadImage(req.files.featuredImage[0].path);
+      featuredImage = result.secure_url;
     }
-    
-    const blogData = { title, excerpt, content, image, readTime: readTimeNum };
-    console.log('💾 Saving blog data:', blogData);
-    
+
+    // Upload content images (separate field or parse from Quill HTML)
+    let images = [];
+    if (req.files?.images) {
+      images = await uploadContentImages(req.files.images.map(f => f.path));
+    }
+
+    const blogData = {
+      title,
+      slug,
+      shortDescription,
+      content,
+      category,
+      tags: tagsArray,
+      featuredImage,
+      images,
+      author,
+      status,
+      readTime,
+      seoTitle: seoTitle || title,
+      seoDescription: seoDescription || shortDescription,
+      ...(req.body.metaImage && { metaImage: req.body.metaImage })
+    };
+
     const blog = await Blog.create(blogData);
-    console.log('✅ Blog created:', blog._id);
-    res.status(201).json(blog);
+    console.log('✅ Blog created:', blog.slug);
+    
+    // Return without _id in populate
+    const { _id, ...safeBlog } = blog.toObject();
+    res.status(201).json(safeBlog);
   } catch (error) {
-    console.error('💥 Blog create ERROR:', error.message);
-    console.error('Full stack:', error.stack);
-    console.error('req.body:', req.body);
-    console.error('req.file:', req.file);
+    console.error('💥 Create ERROR:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
 export const updateBlog = async (req, res) => {
   try {
-    console.log('✏️ Updating blog:', req.params.id);
-    
     const blog = await Blog.findById(req.params.id);
     if (!blog) return res.status(404).json({ message: 'Blog not found' });
-    
-    const { title, excerpt, content, readTime: readTimeStr } = req.body;
-    
-    if (title) blog.title = title;
-    if (excerpt) blog.excerpt = excerpt;
-    if (content) blog.content = content;
-    if (readTimeStr) {
-      blog.readTime = parseInt(readTimeStr.match(/\\d+/)?.[0] || blog.readTime.toString(), 10);
+
+    const updateData = req.body;
+
+    // Update slug only if title changed
+    if (updateData.title && updateData.title !== blog.title) {
+      updateData.slug = await generateUniqueSlug(Blog, updateData.title, blog._id);
     }
-    
-    if (req.file) {
-      const result = await uploadImage(req.file.path);
-      blog.image = result.secure_url;
+
+    // Update read time
+    if (updateData.content) {
+      const words = updateData.content.replace(/<[^>]*>/g, '').split(/\s+/).length;
+      updateData.readTime = Math.ceil(words / 250);
     }
-    
+
+    // Handle featured image
+    if (req.files?.featuredImage?.[0]) {
+      const result = await uploadImage(req.files.featuredImage[0].path);
+      updateData.featuredImage = result.secure_url;
+    }
+
+    // Handle content images
+    if (req.files?.images) {
+      const newImages = await uploadContentImages(req.files.images.map(f => f.path));
+      updateData.images = [...(blog.images || []), ...newImages];
+    }
+
+    // Parse tags
+    if (updateData.tags) {
+      updateData.tags = Array.isArray(updateData.tags) 
+        ? updateData.tags 
+        : JSON.parse(updateData.tags);
+    }
+
+    Object.assign(blog, updateData);
     await blog.save();
-    console.log('✅ Blog updated:', blog._id);
-    res.json(blog);
+    
+    const { _id, ...safeBlog } = blog.toObject();
+    res.json(safeBlog);
   } catch (error) {
-    console.error('💥 Blog update ERROR:', error.message);
-    console.error('Full stack:', error.stack);
+    console.error('💥 Update ERROR:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const incrementViews = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    await Blog.findOneAndUpdate(
+      { slug },
+      { $inc: { views: 1 } }
+    );
+    res.json({ success: true });
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 export const deleteBlog = async (req, res) => {
   try {
-    await Blog.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Blog deleted' });
+    const blog = await Blog.findByIdAndDelete(req.params.id);
+    if (!blog) return res.status(404).json({ message: 'Blog not found' });
+    res.json({ message: 'Blog deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
