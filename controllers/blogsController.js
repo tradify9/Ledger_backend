@@ -158,6 +158,7 @@ export const createBlog = async (req, res) => {
       featuredImage,
       images,
       author,
+      ...(req.body.youtubeUrl && { youtubeUrl: req.body.youtubeUrl }),
       status,
       readTime,
       seoTitle: seoTitle || title,
@@ -211,6 +212,11 @@ export const updateBlog = async (req, res) => {
     if (req.files?.images) {
       const newImages = await uploadContentImages(req.files.images.map(f => f.path));
       updateData.images = [...(blog.images || []), ...newImages];
+    }
+    
+    // Handle YouTube URL
+    if (req.body.youtubeUrl) {
+      updateData.youtubeUrl = req.body.youtubeUrl;
     }
 
     // Parse tags

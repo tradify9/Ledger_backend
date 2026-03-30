@@ -8,6 +8,7 @@ const blogSchema = new mongoose.Schema({
   category: { type: String, required: true },
   tags: [{ type: String }],
   featuredImage: { type: String, default: '' }, 
+  youtubeUrl: { type: String, default: '' },
   images: [{ type: String }], 
   author: { type: String, default: 'Admin' },
   status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
