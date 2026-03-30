@@ -128,9 +128,16 @@ export const createBlog = async (req, res) => {
     const words = content.replace(/<[^>]*>/g, '').split(/\s+/).length;
     const readTime = Math.ceil(words / 250);
 
-    // Upload featured image
+    // Handle featured image (file or URL)
     let featuredImage = '';
-    if (req.files?.featuredImage?.[0]) {
+    if (req.body.image_url) {
+      // Validate URL starts with http/https
+    if (req.body.image_url.match(/^https?:\/\/.+/)) {
+        featuredImage = req.body.image_url;
+      } else {
+        return res.status(400).json({ message: 'Invalid image URL format' });
+      }
+    } else if (req.files?.featuredImage?.[0]) {
       const result = await uploadImage(req.files.featuredImage[0].path);
       featuredImage = result.secure_url;
     }
@@ -188,8 +195,14 @@ export const updateBlog = async (req, res) => {
       updateData.readTime = Math.ceil(words / 250);
     }
 
-    // Handle featured image
-    if (req.files?.featuredImage?.[0]) {
+    // Handle featured image update (file or URL)
+    if (req.body.image_url) {
+      if (req.body.image_url.match(/^https?:\/\/.+/)) {
+        updateData.featuredImage = req.body.image_url;
+      } else {
+        return res.status(400).json({ message: 'Invalid image URL format' });
+      }
+    } else if (req.files?.featuredImage?.[0]) {
       const result = await uploadImage(req.files.featuredImage[0].path);
       updateData.featuredImage = result.secure_url;
     }

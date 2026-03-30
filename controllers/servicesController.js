@@ -1,4 +1,4 @@
-import Service from '../models/Service.js';
+ import Service from '../models/Service.js';
 import { uploadImage } from '../utils/cloudinary.js';
 
 export const getServices = async (req, res) => {
@@ -23,8 +23,14 @@ export const getService = async (req, res) => {
 export const createService = async (req, res) => {
   try {
     const { title, description, category } = req.body;
-    let image = '';
-    if (req.file) {
+  let image = '';
+    if (req.body.image_url) {
+    if (req.body.image_url.match(/^https?:\/\/.+/)) {
+        image = req.body.image_url;
+      } else {
+        return res.status(400).json({ message: 'Invalid image URL format' });
+      }
+    } else if (req.file) {
       const result = await uploadImage(req.file.path);
       image = result.secure_url;
     }
@@ -45,7 +51,13 @@ export const updateService = async (req, res) => {
     service.description = description || service.description;
     service.category = category || service.category;
     
-    if (req.file) {
+    if (req.body.image_url) {
+    if (req.body.image_url.match(/^https?:\/\/.+/)) {
+        service.image = req.body.image_url;
+      } else {
+        return res.status(400).json({ message: 'Invalid image URL format' });
+      }
+    } else if (req.file) {
       const result = await uploadImage(req.file.path);
       service.image = result.secure_url;
     }
