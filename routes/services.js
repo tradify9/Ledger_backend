@@ -12,8 +12,15 @@ router.get('/:id', getService);
 
 // Protected admin routes
 router.use(protect);
-router.post('/', upload.single('image'), createService);
-router.put('/:id', upload.single('image'), updateService);
+
+// Multi-file upload: 'image' for hero, 'images' for gallery (max 10)
+const adminUpload = upload.fields([
+  { name: 'image', maxCount: 1 },  // Hero/main image (backward compat)
+  { name: 'images', maxCount: 10 } // Gallery images
+]);
+
+router.post('/', adminUpload, createService);
+router.put('/:id', adminUpload, updateService);
 router.delete('/:id', deleteService);
 
 export default router;

@@ -68,4 +68,35 @@ export const uploadContentImages = async (files) => {
   }
 };
 
+export const uploadServiceImages = async (files) => {
+  try {
+    console.log(`📤 Uploading ${files.length} service images...`);
+    const uploadPromises = files.map(async (filePath, index) => {
+      const { existsSync } = await import('node:fs');
+      if (!existsSync(filePath)) {
+        console.warn(`⚠️ Skipping missing service image: ${filePath}`);
+        return null;
+      }
+      
+      const result = await cloudinary.uploader.upload(filePath, {
+        folder: `consultancy/services/gallery/${Date.now()}`,
+        transformation: [
+          { width: 1200, height: 800, crop: 'fill' },
+          { quality: 'auto' },
+          { fetch_format: 'auto' }
+        ],
+        public_id: `service-${Date.now()}-${index}`
+      });
+      console.log(`✅ Service image ${index + 1}:`, result.secure_url);
+      return result.secure_url;
+    });
+    
+    const results = await Promise.all(uploadPromises);
+    return results.filter(url => url !== null);
+  } catch (error) {
+    console.error('❌ Service images upload failed:', error.message);
+    throw error;
+  }
+};
+
 export default cloudinary;
