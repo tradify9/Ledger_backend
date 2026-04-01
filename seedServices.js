@@ -16,6 +16,8 @@ const servicesData = [
     category: 'Company Registration',
     
     price: 14999,
+    discount: 10,
+    companyName: 'GrowEasy Corporate Solutions Pvt Ltd',
     governmentFees: '₹7,000 (approx)',
     rating: 4.9,
     

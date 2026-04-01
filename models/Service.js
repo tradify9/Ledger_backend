@@ -10,8 +10,17 @@ const serviceSchema = new mongoose.Schema({
   // Pricing
   price: { type: Number },
   governmentFees: { type: String },
+  pricingCards: [{
+    title: { type: String, required: true },
+    value: { type: String, required: true },
+    icon: { type: String, default: 'Tag' },
+    color: { type: String, default: '#10b981' }
+  }],
   
   // Metadata
+  discount: { type: Number, default: 0, min: 0, max: 100 },
+  companyName: { type: String, default: '' },
+  price: { type: Number },
   rating: { type: Number, min: 0, max: 5 },
   professionals: [{
     name: String,
@@ -61,3 +70,4 @@ const serviceSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 export default mongoose.model('Service', serviceSchema);
+

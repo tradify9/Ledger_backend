@@ -23,8 +23,7 @@ export const getService = async (req, res) => {
 export const createService = async (req, res) => {
   try {
     // Parse form data
-    const {
-      title, description, category, price, governmentFees, rating,
+    const {     title, description, category, price, discount, companyName, governmentFees, rating,
       features, benefits, disadvantages, process, documents, faq, offers
     } = req.body;
 
@@ -47,19 +46,32 @@ export const createService = async (req, res) => {
       } catch {}
     }
 
-    // Parse array fields (expect JSON strings from form)
+    // Robust JSON parsing for arrays from admin form
     const parseArray = (field) => {
+      if (!field) return [];
       try {
-        return JSON.parse(field || '[]');
-      } catch {
+        const parsed = JSON.parse(field);
+        return Array.isArray(parsed) ? parsed.map(item => {
+          // Ensure each item is object with required fields
+          if (typeof item === 'object' && item !== null) {
+            return {
+              title: item.title || '',
+              description: item.description || '',
+              icon: item.icon || 'CheckCircle'
+            };
+          }
+          return { title: String(item), description: '', icon: 'CheckCircle' };
+        }) : [];
+      } catch (err) {
+        console.warn(`Parse array failed for field: ${field.slice(0, 50)}...`, err);
         return [];
       }
     };
 
-    const serviceData = {
-      title, description, category, price: Number(price), governmentFees, rating: Number(rating),
+    const serviceData = {     title, description, category, price: Number(price || 0), discount: Number(discount || 0), companyName: companyName || '', governmentFees, rating: Number(rating || 0),
       image,
       images,
+      pricingCards: parseArray(req.body.pricingCards),
       features: parseArray(features),
       benefits: parseArray(benefits),
       disadvantages: parseArray(disadvantages),
@@ -93,9 +105,7 @@ export const updateService = async (req, res) => {
     if (title !== undefined) service.title = title;
     if (description !== undefined) service.description = description;
     if (category !== undefined) service.category = category;
-    if (price !== undefined) service.price = Number(price);
-    if (governmentFees !== undefined) service.governmentFees = governmentFees;
-    if (rating !== undefined) service.rating = Number(rating);
+    if (price !== undefined) service.price = Number(price);   if (discount !== undefined) service.discount = Number(discount);   if (companyName !== undefined) service.companyName = companyName;    if (governmentFees !== undefined) service.governmentFees = governmentFees;    if (rating !== undefined) service.rating = Number(rating);
 
     // Hero image
     if (req.body.image_url && req.body.image_url.match(/^https?:\/\/.+/)) {
@@ -117,14 +127,29 @@ export const updateService = async (req, res) => {
     }
 
     // Parse and merge arrays
+    // Robust JSON parsing for arrays from admin form (update)
     const parseArray = (field) => {
+      if (!field) return service[field] || [];
       try {
-        return JSON.parse(field || '[]');
-      } catch {
+        const parsed = JSON.parse(field);
+        return Array.isArray(parsed) ? parsed.map(item => {
+          if (typeof item === 'object' && item !== null) {
+            return {
+              title: item.title || '',
+              description: item.description || '',
+              icon: item.icon || 'CheckCircle',
+              step: item.step || 1
+            };
+          }
+          return { title: String(item), description: '', icon: 'CheckCircle' };
+        }) : service[field] || [];
+      } catch (err) {
+        console.warn(`Parse array failed for field: ${field.slice(0, 50)}...`, err);
         return service[field] || [];
       }
     };
 
+    if (req.body.pricingCards !== undefined) service.pricingCards = parseArray(req.body.pricingCards);
     if (features !== undefined) service.features = parseArray(features);
     if (benefits !== undefined) service.benefits = parseArray(benefits);
     if (disadvantages !== undefined) service.disadvantages = parseArray(disadvantages);
@@ -151,3 +176,4 @@ export const deleteService = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
