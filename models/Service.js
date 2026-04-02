@@ -52,7 +52,11 @@ const serviceSchema = new mongoose.Schema({
     description: String,
     duration: String
   }],
-  documents: [String],
+documents: [{
+    title: { type: String, required: true },
+    description: { type: String, default: '' },
+    icon: { type: String, default: 'FileText' }
+  }],
   
   // FAQ
   faq: [{
