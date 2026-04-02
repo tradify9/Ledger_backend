@@ -12,7 +12,7 @@ const serviceSchema = new mongoose.Schema({
   governmentFees: { type: String },
   pricingCards: [{
     title: { type: String, required: true },
-    value: { type: String, required: true },
+    value: { type: String }, // Optional for frontend
     icon: { type: String, default: 'Tag' },
     color: { type: String, default: '#10b981' }
   }],
@@ -20,13 +20,13 @@ const serviceSchema = new mongoose.Schema({
   // Metadata
   discount: { type: Number, default: 0, min: 0, max: 100 },
   companyName: { type: String, default: '' },
-  price: { type: Number },
+  price: { type: Number }, // Kept first occurrence
   rating: { type: Number, min: 0, max: 5 },
   professionals: [{
-    name: String,
-    role: String,
-    image: String,
-    bio: String
+    name: { type: String, default: '' },
+    role: { type: String, default: '' },
+    image: { type: String, default: '' },
+    bio: { type: String, default: '' }
   }],
   
   // Gallery

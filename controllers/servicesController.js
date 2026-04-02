@@ -63,7 +63,7 @@ export const createService = async (req, res) => {
           return { title: String(item), description: '', icon: 'CheckCircle' };
         }) : [];
       } catch (err) {
-        console.warn(`Parse array failed for field: ${field.slice(0, 50)}...`, err);
+        console.error(`Parse array failed for create arrays:`, field.slice(0, 100), err.message);
         return [];
       }
     };
@@ -105,7 +105,7 @@ export const updateService = async (req, res) => {
     if (title !== undefined) service.title = title;
     if (description !== undefined) service.description = description;
     if (category !== undefined) service.category = category;
-    if (price !== undefined) service.price = Number(price);   if (discount !== undefined) service.discount = Number(discount);   if (companyName !== undefined) service.companyName = companyName;    if (governmentFees !== undefined) service.governmentFees = governmentFees;    if (rating !== undefined) service.rating = Number(rating);
+    if (price !== undefined) service.price = Number(price) || 0;
 
     // Hero image
     if (req.body.image_url && req.body.image_url.match(/^https?:\/\/.+/)) {
@@ -128,7 +128,7 @@ export const updateService = async (req, res) => {
 
     // Parse and merge arrays
     // Robust JSON parsing for arrays from admin form (update)
-    const parseArray = (field) => {
+      const parseArray = (field, fieldName = 'unknown') => {
       if (!field) return service[field] || [];
       try {
         const parsed = JSON.parse(field);
@@ -144,7 +144,8 @@ export const updateService = async (req, res) => {
           return { title: String(item), description: '', icon: 'CheckCircle' };
         }) : service[field] || [];
       } catch (err) {
-        console.warn(`Parse array failed for field: ${field.slice(0, 50)}...`, err);
+        console.error(`Parse array failed for update arrays:`, field.slice(0, 100), err.message);
+        return service[field] || [];
         return service[field] || [];
       }
     };
