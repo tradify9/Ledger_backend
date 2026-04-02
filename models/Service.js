@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const serviceSchema = new mongoose.Schema({
-  title: { type: String, required: true },
+  title: { type: String },
   description: { type: String },
   // Hero image (backward compat)
   image: { type: String, default: '' },
@@ -11,8 +11,8 @@ const serviceSchema = new mongoose.Schema({
   price: { type: Number },
   governmentFees: { type: String },
   pricingCards: [{
-    title: { type: String, required: true },
-    value: { type: String }, // Optional for frontend
+    title: { type: String },
+    value: { type: String }, 
     icon: { type: String, default: 'Tag' },
     color: { type: String, default: '#10b981' }
   }],
@@ -20,7 +20,6 @@ const serviceSchema = new mongoose.Schema({
   // Metadata
   discount: { type: Number, default: 0, min: 0, max: 100 },
   companyName: { type: String, default: '' },
-  price: { type: Number }, // Kept first occurrence
   rating: { type: Number, min: 0, max: 5 },
   professionals: [{
     name: { type: String, default: '' },
@@ -30,14 +29,14 @@ const serviceSchema = new mongoose.Schema({
   }],
   
   // Gallery
-  images: [String],
+  images: [{ type: String, default: [] }],
   
   // Rich content arrays (JSON strings or objects)
   features: [{
     title: String,
     description: String,
-    icon: String // e.g. 'CheckCircle'
-  }],
+    icon: String 
+  }], 
   benefits: [{
     title: String,
     description: String
@@ -52,8 +51,8 @@ const serviceSchema = new mongoose.Schema({
     description: String,
     duration: String
   }],
-documents: [{
-    title: { type: String, required: true },
+  documents: [{
+    title: { type: String },
     description: { type: String, default: '' },
     icon: { type: String, default: 'FileText' }
   }],
@@ -71,7 +70,9 @@ documents: [{
     discount: Number,
     validUntil: Date
   }]
-}, { timestamps: true });
+}, { 
+  timestamps: true 
+});
 
 export default mongoose.model('Service', serviceSchema);
 
