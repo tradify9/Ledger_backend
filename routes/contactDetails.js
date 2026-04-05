@@ -4,8 +4,8 @@ import { getContactDetails, updateContactDetails } from '../controllers/contactD
 
 const router = express.Router();
 
-router.use(protect);
 router.get('/', getContactDetails);
+router.use(protect);
 router.put('/', updateContactDetails);
 
 export default router;

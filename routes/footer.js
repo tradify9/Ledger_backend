@@ -4,8 +4,8 @@ import { getFooter, updateFooter } from '../controllers/footerController.js';
 
 const router = express.Router();
 
-router.use(protect);
 router.get('/', getFooter);
+router.use(protect);
 router.put('/', updateFooter);
 
 export default router;
