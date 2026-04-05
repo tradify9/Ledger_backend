@@ -12,6 +12,7 @@ import privacyRoutes from './routes/privacy.js';
 import homeRoutes from './routes/home.js';
 import contactDetailsRoutes from './routes/contactDetails.js';
 import dashboardRoutes from './routes/dashboard.js';
+import footerRoutes from './routes/footer.js';
 
 dotenv.config();
 
@@ -50,8 +51,10 @@ app.use('/api/about', aboutRoutes);
 app.use('/api/privacy', privacyRoutes);
 app.use('/api/home', homeRoutes);
 app.use('/api/contact-details', contactDetailsRoutes);
+app.use('/api/footer', footerRoutes);
 
 app.use('/api/admin/dashboard', dashboardRoutes);
+
 
 const PORT = process.env.PORT || 5000;
 
