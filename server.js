@@ -9,6 +9,7 @@ import contactsRoutes from './routes/contacts.js';
 import siteSettingsRoutes from './routes/siteSettings.js';
 import aboutRoutes from './routes/about.js';
 import privacyRoutes from './routes/privacy.js';
+import homeRoutes from './routes/home.js';
 import dashboardRoutes from './routes/dashboard.js';
 
 dotenv.config();
@@ -46,6 +47,7 @@ app.use('/api/contacts', contactsRoutes);
 app.use('/api/site-settings', siteSettingsRoutes);
 app.use('/api/about', aboutRoutes);
 app.use('/api/privacy', privacyRoutes);
+app.use('/api/home', homeRoutes);
 
 app.use('/api/admin/dashboard', dashboardRoutes);
 
