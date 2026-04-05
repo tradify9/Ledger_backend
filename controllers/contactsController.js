@@ -41,3 +41,17 @@ export const deleteContact = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const updateContact = async (req, res) => {
+  try {
+    const contact = await Contact.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!contact) return res.status(404).json({ message: 'Contact not found' });
+    res.json(contact);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
