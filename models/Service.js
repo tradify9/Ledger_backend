@@ -1,26 +1,35 @@
 import mongoose from 'mongoose';
 
 const serviceSchema = new mongoose.Schema({
-  title: { type: String },
-  description: { type: String },
-  // Hero image (backward compat)
-  image: { type: String, default: '' },
+  // Basic Info
+  title: { type: String, required: true },
+  description: { type: String, default: '' },
   category: { type: String, default: 'General' },
   
+  // Hero image (main image)
+  image: { type: String, default: '' },
+  
+  // Gallery images
+  images: [{ type: String, default: [] }],
+  
   // Pricing
-  price: { type: Number },
-  governmentFees: { type: String },
+  price: { type: Number, default: 0 },
+  governmentFees: { type: String, default: '' },
+  discount: { type: Number, default: 0, min: 0, max: 100 },
+  
+  // Company & Rating
+  companyName: { type: String, default: '' },
+  rating: { type: Number, default: 5, min: 0, max: 5 },
+  
+  // Pricing Cards
   pricingCards: [{
-    title: { type: String },
-    value: { type: String }, 
+    title: { type: String, default: '' },
+    value: { type: String, default: '' },
     icon: { type: String, default: 'Tag' },
     color: { type: String, default: '#10b981' }
   }],
   
-  // Metadata
-  discount: { type: Number, default: 0, min: 0, max: 100 },
-  companyName: { type: String, default: '' },
-  rating: { type: Number, min: 0, max: 5 },
+  // Team/Professionals
   professionals: [{
     name: { type: String, default: '' },
     role: { type: String, default: '' },
@@ -28,51 +37,56 @@ const serviceSchema = new mongoose.Schema({
     bio: { type: String, default: '' }
   }],
   
-  // Gallery
-  images: [{ type: String, default: [] }],
-  
-  // Rich content arrays (JSON strings or objects)
+  // Features
   features: [{
-    title: String,
-    description: String,
-    icon: String 
-  }], 
+    title: { type: String, default: '' },
+    description: { type: String, default: '' },
+    icon: { type: String, default: 'CheckCircle' }
+  }],
+  
+  // Benefits
   benefits: [{
-    title: String,
-    description: String
+    title: { type: String, default: '' },
+    description: { type: String, default: '' }
   }],
+  
+  // Disadvantages
   disadvantages: [{
-    title: String,
-    description: String
+    title: { type: String, default: '' },
+    description: { type: String, default: '' }
   }],
+  
+  // Process Steps
   process: [{
-    step: Number,
-    title: String,
-    description: String,
-    duration: String
+    step: { type: Number, default: 1 },
+    title: { type: String, default: '' },
+    description: { type: String, default: '' },
+    duration: { type: String, default: '' }
   }],
+  
+  // Required Documents
   documents: [{
-    title: { type: String },
+    title: { type: String, default: '' },
     description: { type: String, default: '' },
     icon: { type: String, default: 'FileText' }
   }],
   
   // FAQ
   faq: [{
-    question: String,
-    answer: String
+    question: { type: String, default: '' },
+    answer: { type: String, default: '' }
   }],
   
-  // Offers/Promos
+  // Offers
   offers: [{
-    title: String,
-    description: String,
-    discount: Number,
-    validUntil: Date
+    title: { type: String, default: '' },
+    description: { type: String, default: '' },
+    discount: { type: Number, default: 0 },
+    validUntil: { type: Date }
   }]
+  
 }, { 
   timestamps: true 
 });
 
 export default mongoose.model('Service', serviceSchema);
-

@@ -1,104 +1,160 @@
 import Service from '../models/Service.js';
 import { uploadImage, uploadServiceImages } from '../utils/cloudinary.js';
 
+// Helper function to safely parse JSON arrays
+const safeParseArray = (data, defaultValue = []) => {
+  if (!data) return defaultValue;
+  try {
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed : defaultValue;
+  } catch (err) {
+    console.error('Parse array error:', err.message);
+    return defaultValue;
+  }
+};
+
+// Helper function to parse array with specific item structure
+const parseStructuredArray = (data, defaultStructure = {}) => {
+  if (!data) return [];
+  try {
+    const parsed = JSON.parse(data);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(item => {
+      if (typeof item === 'object' && item !== null) {
+        return { ...defaultStructure, ...item };
+      }
+      return { ...defaultStructure, title: String(item) };
+    });
+  } catch (err) {
+    console.error('Parse structured array error:', err.message);
+    return [];
+  }
+};
+
+// Get all services (PUBLIC)
 export const getServices = async (req, res) => {
   try {
     const services = await Service.find().sort({ createdAt: -1 });
-    res.json(services);
+    res.status(200).json(services);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Get services error:', error);
+    res.status(500).json({ message: 'Failed to fetch services', error: error.message });
   }
 };
 
+// Get single service by ID (PUBLIC)
 export const getService = async (req, res) => {
   try {
     const service = await Service.findById(req.params.id);
-    if (!service) return res.status(404).json({ message: 'Service not found' });
-    res.json(service);
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+    res.status(200).json(service);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Get service error:', error);
+    res.status(500).json({ message: 'Failed to fetch service', error: error.message });
   }
 };
 
+// Create new service (ADMIN)
 export const createService = async (req, res) => {
   try {
-    // Parse form data
-    const {     title, description, category, price, discount, companyName, governmentFees, rating,
-      features, benefits, disadvantages, process, documents, faq, offers
+    // Extract basic fields
+    const {
+      title, description, category, price, discount, 
+      companyName, governmentFees, rating
     } = req.body;
 
-    // Hero image (backward compat)
+    // Validate required fields
+    if (!title) {
+      return res.status(400).json({ message: 'Service title is required' });
+    }
+
+    // Handle main image upload
     let image = '';
-    if (req.body.image_url && req.body.image_url.match(/^https?:\/\/.+/)) {
-      image = req.body.image_url;
-    } else if (req.file?.image) {
-      const result = await uploadImage(req.file.image.path);
+    
+    // Check for uploaded file in req.files.image (multer fields)
+    if (req.files && req.files.image && req.files.image[0]) {
+      const result = await uploadImage(req.files.image[0].path);
+      image = result.secure_url;
+    } 
+    // Check for single file upload (backward compatibility)
+    else if (req.file) {
+      const result = await uploadImage(req.file.path);
       image = result.secure_url;
     }
-
-    // Gallery images
-    let images = [];
-    if (req.files?.images) {
-      images = await uploadServiceImages(req.files.images.map(f => f.path));
-    } else if (req.body.images) {
-      try {
-        images = JSON.parse(req.body.images);
-      } catch {}
+    // Check for image URL
+    else if (req.body.image_url && req.body.image_url.match(/^https?:\/\/.+/)) {
+      image = req.body.image_url;
     }
 
-    // Robust JSON parsing for arrays from admin form
-    const parseArray = (field) => {
-      if (!field) return [];
-      try {
-        const parsed = JSON.parse(field);
-        return Array.isArray(parsed) ? parsed.map(item => {
-          // Ensure each item is object with required fields
-          if (typeof item === 'object' && item !== null) {
-            return {
-              title: item.title || '',
-              description: item.description || '',
-              icon: item.icon || 'CheckCircle'
-            };
-          }
-          return { title: String(item), description: '', icon: 'CheckCircle' };
-        }) : [];
-      } catch (err) {
-        console.error(`Parse array failed for create arrays:`, field.slice(0, 100), err.message);
-        return [];
+    // Handle gallery images
+    let images = [];
+    if (req.files && req.files.images && req.files.images.length > 0) {
+      const imagePaths = req.files.images.map(file => file.path);
+      images = await uploadServiceImages(imagePaths);
+    } else if (req.body.images) {
+      const parsedImages = safeParseArray(req.body.images);
+      if (Array.isArray(parsedImages)) {
+        images = parsedImages;
       }
-    };
+    }
 
-    const serviceData = {     title, description, category, price: Number(price || 0), discount: Number(discount || 0), companyName: companyName || '', governmentFees, rating: Number(rating || 0),
-      image,
-      images,
-      pricingCards: parseArray(req.body.pricingCards),
-      features: parseArray(features),
-      benefits: parseArray(benefits),
-      disadvantages: parseArray(disadvantages),
-      process: parseArray(process),
-      documents: parseArray(documents),
-      faq: parseArray(faq),
-      offers: parseArray(offers),
-      professionals: parseArray(req.body.professionals)
+    // Parse all JSON arrays
+    const pricingCards = parseStructuredArray(req.body.pricingCards, { title: '', value: '', icon: 'Tag', color: '#10b981' });
+    const professionals = parseStructuredArray(req.body.professionals, { name: '', role: '', image: '', bio: '' });
+    const features = parseStructuredArray(req.body.features, { title: '', description: '', icon: 'CheckCircle' });
+    const benefits = parseStructuredArray(req.body.benefits, { title: '', description: '' });
+    const disadvantages = parseStructuredArray(req.body.disadvantages, { title: '', description: '' });
+    const process = parseStructuredArray(req.body.process, { step: 1, title: '', description: '', duration: '' });
+    const documents = parseStructuredArray(req.body.documents, { title: '', description: '', icon: 'FileText' });
+    const faq = parseStructuredArray(req.body.faq, { question: '', answer: '' });
+    const offers = parseStructuredArray(req.body.offers, { title: '', description: '', discount: 0 });
+
+    // Create service object
+    const serviceData = {
+      title: title || '',
+      description: description || '',
+      category: category || 'General',
+      image: image,
+      images: images,
+      price: Number(price) || 0,
+      governmentFees: governmentFees || '',
+      discount: Number(discount) || 0,
+      companyName: companyName || '',
+      rating: Number(rating) || 5,
+      pricingCards: pricingCards,
+      professionals: professionals,
+      features: features,
+      benefits: benefits,
+      disadvantages: disadvantages,
+      process: process,
+      documents: documents,
+      faq: faq,
+      offers: offers
     };
 
     const service = await Service.create(serviceData);
     res.status(201).json(service);
+    
   } catch (error) {
     console.error('Create service error:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'Failed to create service', error: error.message });
   }
 };
 
+// Update service (ADMIN)
 export const updateService = async (req, res) => {
   try {
     const service = await Service.findById(req.params.id);
-    if (!service) return res.status(404).json({ message: 'Service not found' });
-    
-    // Parse form data
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    // Extract basic fields
     const {
-      title, description, category, price, governmentFees, rating,
-      features, benefits, disadvantages, process, documents, faq, offers
+      title, description, category, price, discount,
+      companyName, governmentFees, rating
     } = req.body;
 
     // Update basic fields
@@ -106,75 +162,86 @@ export const updateService = async (req, res) => {
     if (description !== undefined) service.description = description;
     if (category !== undefined) service.category = category;
     if (price !== undefined) service.price = Number(price) || 0;
+    if (discount !== undefined) service.discount = Number(discount) || 0;
+    if (companyName !== undefined) service.companyName = companyName;
+    if (governmentFees !== undefined) service.governmentFees = governmentFees;
+    if (rating !== undefined) service.rating = Number(rating) || 5;
 
-    // Hero image
-    if (req.body.image_url && req.body.image_url.match(/^https?:\/\/.+/)) {
-      service.image = req.body.image_url;
-    } else if (req.file?.image) {
-      const result = await uploadImage(req.file.image.path);
+    // Handle main image update
+    if (req.files && req.files.image && req.files.image[0]) {
+      const result = await uploadImage(req.files.image[0].path);
       service.image = result.secure_url;
+    } else if (req.file) {
+      const result = await uploadImage(req.file.path);
+      service.image = result.secure_url;
+    } else if (req.body.image_url && req.body.image_url.match(/^https?:\/\/.+/)) {
+      service.image = req.body.image_url;
     }
 
-    // Gallery images
-    if (req.files?.images) {
-      const newImages = await uploadServiceImages(req.files.images.map(f => f.path));
+    // Handle gallery images (append new ones)
+    if (req.files && req.files.images && req.files.images.length > 0) {
+      const imagePaths = req.files.images.map(file => file.path);
+      const newImages = await uploadServiceImages(imagePaths);
       service.images = [...(service.images || []), ...newImages];
     } else if (req.body.images) {
       try {
         const newImages = JSON.parse(req.body.images);
-        service.images = [...(service.images || []), ...newImages];
-      } catch {}
+        if (Array.isArray(newImages)) {
+          service.images = [...(service.images || []), ...newImages];
+        }
+      } catch (err) {
+        console.error('Parse images error:', err.message);
+      }
     }
 
-    // Parse and merge arrays
-    // Robust JSON parsing for arrays from admin form (update)
-      const parseArray = (field, fieldName = 'unknown') => {
-      if (!field) return service[field] || [];
-      try {
-        const parsed = JSON.parse(field);
-        return Array.isArray(parsed) ? parsed.map(item => {
-          if (typeof item === 'object' && item !== null) {
-            return {
-              title: item.title || '',
-              description: item.description || '',
-              icon: item.icon || 'CheckCircle',
-              step: item.step || 1
-            };
-          }
-          return { title: String(item), description: '', icon: 'CheckCircle' };
-        }) : service[field] || [];
-      } catch (err) {
-        console.error(`Parse array failed for update arrays:`, field.slice(0, 100), err.message);
-        return service[field] || [];
-        return service[field] || [];
-      }
-    };
-
-    if (req.body.pricingCards !== undefined) service.pricingCards = parseArray(req.body.pricingCards);
-    if (features !== undefined) service.features = parseArray(features);
-    if (benefits !== undefined) service.benefits = parseArray(benefits);
-    if (disadvantages !== undefined) service.disadvantages = parseArray(disadvantages);
-    if (process !== undefined) service.process = parseArray(process);
-    if (documents !== undefined) service.documents = parseArray(documents);
-    if (faq !== undefined) service.faq = parseArray(faq);
-    if (offers !== undefined) service.offers = parseArray(offers);
-    if (req.body.professionals !== undefined) service.professionals = parseArray(req.body.professionals);
+    // Parse and update JSON arrays if provided
+    if (req.body.pricingCards !== undefined) {
+      service.pricingCards = parseStructuredArray(req.body.pricingCards, { title: '', value: '', icon: 'Tag', color: '#10b981' });
+    }
+    if (req.body.professionals !== undefined) {
+      service.professionals = parseStructuredArray(req.body.professionals, { name: '', role: '', image: '', bio: '' });
+    }
+    if (req.body.features !== undefined) {
+      service.features = parseStructuredArray(req.body.features, { title: '', description: '', icon: 'CheckCircle' });
+    }
+    if (req.body.benefits !== undefined) {
+      service.benefits = parseStructuredArray(req.body.benefits, { title: '', description: '' });
+    }
+    if (req.body.disadvantages !== undefined) {
+      service.disadvantages = parseStructuredArray(req.body.disadvantages, { title: '', description: '' });
+    }
+    if (req.body.process !== undefined) {
+      service.process = parseStructuredArray(req.body.process, { step: 1, title: '', description: '', duration: '' });
+    }
+    if (req.body.documents !== undefined) {
+      service.documents = parseStructuredArray(req.body.documents, { title: '', description: '', icon: 'FileText' });
+    }
+    if (req.body.faq !== undefined) {
+      service.faq = parseStructuredArray(req.body.faq, { question: '', answer: '' });
+    }
+    if (req.body.offers !== undefined) {
+      service.offers = parseStructuredArray(req.body.offers, { title: '', description: '', discount: 0 });
+    }
 
     await service.save();
-    res.json(service);
+    res.status(200).json(service);
+    
   } catch (error) {
     console.error('Update service error:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'Failed to update service', error: error.message });
   }
 };
 
+// Delete service (ADMIN)
 export const deleteService = async (req, res) => {
   try {
     const service = await Service.findByIdAndDelete(req.params.id);
-    if (!service) return res.status(404).json({ message: 'Service not found' });
-    res.json({ message: 'Service deleted' });
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+    res.status(200).json({ message: 'Service deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Delete service error:', error);
+    res.status(500).json({ message: 'Failed to delete service', error: error.message });
   }
 };
-
