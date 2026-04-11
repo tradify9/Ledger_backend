@@ -1,14 +1,15 @@
 import express from 'express';
 import { protect } from '../middleware/auth.js';
-import { getSiteSettings, updateSiteSettings } from '../controllers/siteSettingsController.js';
+import { getSiteSettings, updateSiteSettings, resetSiteSettings } from '../controllers/siteSettingsController.js';
 
 const router = express.Router();
 
-// Public route - anyone can read settings
+// Public routes - anyone can read settings
 router.get('/', getSiteSettings);
 
-// Admin protected route - only admin can update
+// Admin protected routes
 router.use(protect);
 router.put('/', updateSiteSettings);
+router.post('/reset', resetSiteSettings);
 
 export default router;
