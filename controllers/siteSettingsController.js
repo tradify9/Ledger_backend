@@ -42,7 +42,7 @@ export const updateSiteSettings = async (req, res) => {
     }
     
     // Update each field if provided
-    const allowedFields = ['navbarTitle', 'navbarTagline', 'logoUrl', 'heroTitle', 'primaryColor', 'aboutContent', 'privacyPolicy', 'servicesHero'];
+    const allowedFields = ['navbarTitle', 'navbarTagline', 'logoUrl', 'heroTitle', 'primaryColor', 'aboutContent', 'privacyPolicy', 'servicesHero', 'logoSize'];
     
     allowedFields.forEach(field => {
       if (req.body[field] !== undefined) {
@@ -51,6 +51,12 @@ export const updateSiteSettings = async (req, res) => {
             ...settings.servicesHero,
             ...req.body[field]
           };
+        } else if (field === 'logoSize') {
+          const logoSize = parseFloat(req.body[field]);
+          if (isNaN(logoSize) || logoSize < 0.5 || logoSize > 2.0) {
+            return res.status(400).json({ message: 'logoSize must be between 0.5 and 2.0' });
+          }
+          settings[field] = logoSize;
         } else {
           settings[field] = req.body[field];
         }
@@ -83,3 +89,4 @@ export const resetSiteSettings = async (req, res) => {
     res.status(500).json({ message: 'Failed to reset site settings', error: error.message });
   }
 };
+
