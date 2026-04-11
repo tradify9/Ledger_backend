@@ -52,6 +52,12 @@ const siteSettingSchema = new mongoose.Schema({
   servicesHero: {
     type: servicesHeroSchema,
     default: () => ({})
+  },
+  logoSize: {
+    type: Number,
+    default: 1.0,
+    min: 0.5,
+    max: 2.0
   }
 }, {
   timestamps: true

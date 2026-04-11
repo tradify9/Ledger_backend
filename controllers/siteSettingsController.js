@@ -14,7 +14,8 @@ const defaultSettings = {
     heroSubtitle: 'Discover our premium consultancy services designed for ambitious businesses. Get expert guidance to achieve sustainable growth and success.',
     ctaTitle: 'Find Perfect Service',
     ctaSubtitle: 'Get matched with ideal consultant in 24hrs'
-  }
+  },
+  logoSize: 1.0
 };
 
 // Get site settings (PUBLIC)
