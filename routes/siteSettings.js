@@ -4,9 +4,11 @@ import { getSiteSettings, updateSiteSettings } from '../controllers/siteSettings
 
 const router = express.Router();
 
+// Public route - anyone can read settings
 router.get('/', getSiteSettings);
+
+// Admin protected route - only admin can update
 router.use(protect);
 router.put('/', updateSiteSettings);
 
 export default router;
-

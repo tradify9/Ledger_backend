@@ -8,6 +8,7 @@ export const getSiteSettings = async (req, res) => {
     }
     res.json(settings);
   } catch (error) {
+    console.error('Get site settings error:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -23,7 +24,7 @@ export const updateSiteSettings = async (req, res) => {
     }
     res.json(settings);
   } catch (error) {
+    console.error('Update site settings error:', error);
     res.status(500).json({ message: error.message });
   }
 };
-
