@@ -9,7 +9,7 @@ export const register = async (req, res) => {
     if (existingAdmin) return res.status(400).json({ message: 'Admin exists' });
     
     const admin = await Admin.create({ name, email, password });
-    const token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '365d' });
     
     res.status(201).json({ token, admin: { id: admin._id, name, email } });
   } catch (error) {
@@ -29,7 +29,7 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
     
-    const token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '365d' });
     res.json({ token, admin: { id: admin._id, name: admin.name, email } });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -57,7 +57,7 @@ export const updateProfile = async (req, res) => {
     }
 
     const updatedAdmin = await admin.save();
-    const token = jwt.sign({ id: updatedAdmin._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ id: updatedAdmin._id }, process.env.JWT_SECRET, { expiresIn: '365d' });
 
     res.json({ 
       token, 
