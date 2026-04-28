@@ -22,11 +22,11 @@ const servicesHeroSchema = new mongoose.Schema({
 const siteSettingSchema = new mongoose.Schema({
   navbarTitle: {
     type: String,
-    default: 'ConsultancyPro'
+    default: 'ledgeradvisory'
   },
   navbarTagline: {
     type: String,
-    default: 'Professional Consulting'
+    default: 'ledger advisory professional Consulting'
   },
   logoUrl: {
     type: String,
