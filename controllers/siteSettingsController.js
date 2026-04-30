@@ -2,7 +2,7 @@ import SiteSetting from '../models/SiteSetting.js';
 
 // Default settings object
 const defaultSettings = {
-  navbarTitle: ' LEDGER ADVISORY',
+  navbarTitle: 'Ledger Advisory',
   navbarTagline: 'Professional Consulting',
   logoUrl: '',
   heroTitle: 'Transform Your Business',
