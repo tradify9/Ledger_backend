@@ -143,6 +143,19 @@ export const updateHomePage = async (req, res) => {
       page.hero.heroImage = result.secure_url;
     }
     
+    // Handle testimonial avatar uploads (testimonialAvatar_0, testimonialAvatar_1, etc.)
+    if (req.files) {
+      Object.keys(req.files).forEach(field => {
+        if (field.startsWith('testimonialAvatar_')) {
+          const index = parseInt(field.split('_')[1]);
+          if (!isNaN(index) && page.testimonials && page.testimonials[index]) {
+            const result = await uploadImage(req.files[field][0].path);
+            page.testimonials[index].avatar = result.secure_url;
+          }
+        }
+      });
+    }
+    
     await page.save();
     res.json(page);
   } catch (error) {

@@ -7,7 +7,7 @@ const defaultSettings = {
   logoUrl: '',
   heroTitle: 'Transform Your Business',
   primaryColor: '#3B82F6',
-  aboutContent: 'Leading consultancy firm with proven results.',
+  aboutContent: 'Leading d firm with proven results.',
   privacyPolicy: 'Your privacy is protected.',
   servicesHero: {
     texts: ['Strategic Planning', 'Digital Transformation', 'Growth Consulting'],
