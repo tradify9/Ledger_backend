@@ -61,6 +61,8 @@ export const getAboutPage = async (req, res) => {
           { metric: '24/7', label: 'Support', icon: 'Clock' },
           { metric: '50+', label: 'Experts', icon: 'Brain' }
         ],
+        impactTitle: 'Our Impact in Numbers',
+        impactSubtitle: 'Making a measurable difference for our clients worldwide',
         
         testimonialsTitle: 'What Our Clients Say',
         testimonialsSubtitle: 'Trusted by industry leaders across India',

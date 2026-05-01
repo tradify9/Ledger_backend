@@ -84,6 +84,10 @@ const aboutPageSchema = new mongoose.Schema({
 
   // Impact/Achievements Section
   achievements: [achievementSchema],
+  
+  // Impact Section Title/Subtitle
+  impactTitle: { type: String, default: 'Our Impact in Numbers' },
+  impactSubtitle: { type: String, default: 'Making a measurable difference for our clients worldwide' },
 
   // Testimonials Section
   testimonialsTitle: { type: String, default: 'What Our Clients Say' },

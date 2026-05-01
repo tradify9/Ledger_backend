@@ -145,15 +145,21 @@ export const updateHomePage = async (req, res) => {
     
     // Handle testimonial avatar uploads (testimonialAvatar_0, testimonialAvatar_1, etc.)
     if (req.files) {
-      Object.keys(req.files).forEach(field => {
+      // Handle both object (fields) and array (any) formats
+      const filesArray = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
+      for (const file of filesArray) {
+        const field = file.fieldname;
         if (field.startsWith('testimonialAvatar_')) {
           const index = parseInt(field.split('_')[1]);
           if (!isNaN(index) && page.testimonials && page.testimonials[index]) {
-            const result = await uploadImage(req.files[field][0].path);
+            const result = await uploadImage(file.path);
             page.testimonials[index].avatar = result.secure_url;
           }
+        } else if (field === 'heroImage') {
+          const result = await uploadImage(file.path);
+          if (page.hero) page.hero.heroImage = result.secure_url;
         }
-      });
+      }
     }
     
     await page.save();
