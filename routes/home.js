@@ -11,10 +11,7 @@ router.get('/', getHomePage);
 
 // Admin protected routes
 router.use(protect);
-router.put('/', upload.fields([
-  { name: 'heroImage', maxCount: 1 },
-  { name: 'testimonialAvatar', maxCount: 10 }
-]), updateHomePage);
+router.put('/', upload.any(), updateHomePage);
 
 router.put('/json', updateHomePageJson);
 
