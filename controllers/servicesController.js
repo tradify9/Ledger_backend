@@ -59,9 +59,9 @@ export const getService = async (req, res) => {
 // Create new service (ADMIN)
 export const createService = async (req, res) => {
   try {
-    // Extract basic fields
+// Extract basic fields
     const {
-      title, description, category, price, discount, 
+      title, description, longDescription, category, price, discount, 
       companyName, governmentFees, rating
     } = req.body;
 
@@ -69,6 +69,9 @@ export const createService = async (req, res) => {
     if (!title) {
       return res.status(400).json({ message: 'Service title is required' });
     }
+
+    // Handle rich content (longDescription) - can be HTML from Quill editor
+    const richContent = (typeof longDescription === 'string') ? longDescription : '';
 
     // Handle main image upload
     let image = '';
@@ -111,10 +114,11 @@ export const createService = async (req, res) => {
     const faq = parseStructuredArray(req.body.faq, { question: '', answer: '' });
     const offers = parseStructuredArray(req.body.offers, { title: '', description: '', discount: 0 });
 
-    // Create service object
+// Create service object
     const serviceData = {
       title: title || '',
       description: description || '',
+      longDescription: richContent || '',
       category: category || 'General',
       image: image,
       images: images,
@@ -151,15 +155,16 @@ export const updateService = async (req, res) => {
       return res.status(404).json({ message: 'Service not found' });
     }
 
-    // Extract basic fields
+// Extract basic fields
     const {
-      title, description, category, price, discount,
+      title, description, longDescription, category, price, discount,
       companyName, governmentFees, rating
     } = req.body;
 
     // Update basic fields
     if (title !== undefined) service.title = title;
     if (description !== undefined) service.description = description;
+    if (longDescription !== undefined) service.longDescription = longDescription;
     if (category !== undefined) service.category = category;
     if (price !== undefined) service.price = Number(price) || 0;
     if (discount !== undefined) service.discount = Number(discount) || 0;

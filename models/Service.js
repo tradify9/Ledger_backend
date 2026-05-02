@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
 
 const serviceSchema = new mongoose.Schema({
-  // Basic Info
+// Basic Info
   title: { type: String, required: true },
   description: { type: String, default: '' },
+  longDescription: { type: String, default: '' }, // Rich content for service detail page
   category: { type: String, default: 'General' },
   
   // Hero image (main image)
