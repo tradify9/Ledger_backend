@@ -47,3 +47,4 @@ const seedAdmins = async () => {
 };
 
 seedAdmins();
+await import('./seedAbout.js');

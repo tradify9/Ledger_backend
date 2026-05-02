@@ -11,10 +11,11 @@ mongoose.connect(process.env.MONGODB_URI)
     // Create or update blog page settings
     const blogPage = await BlogPage.findOne({ type: 'blogpage' });
     
-    if (!blogPage) {
+if (!blogPage) {
       await BlogPage.create({
         type: 'blogpage',
-        heroTitle: 'Insights That Drive Success',
+        heroTitle: 'Insights That',
+        heroHighlight: 'Drive Success',
         heroSubtitle: 'Expert articles, industry trends, and actionable insights to help you stay ahead in the digital age.'
       });
       console.log('✅ BlogPage document created');

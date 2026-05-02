@@ -15,15 +15,15 @@ export const updateBlogSettings = [
   protect,
   async (req, res) => {
     try {
-      const { heroTitle, heroSubtitle } = req.body;
+      const { heroTitle, heroHighlight, heroSubtitle } = req.body;
       
-      if (!heroTitle || !heroSubtitle) {
-        return res.status(400).json({ message: 'heroTitle and heroSubtitle required' });
+      if (!heroTitle || !heroHighlight || !heroSubtitle) {
+        return res.status(400).json({ message: 'heroTitle, heroHighlight, and heroSubtitle are required' });
       }
 
       const blogPage = await BlogPage.findOneAndUpdate(
         { type: 'blogpage' },
-        { heroTitle, heroSubtitle },
+        { heroTitle, heroHighlight, heroSubtitle },
         { new: true, runValidators: true }
       );
 

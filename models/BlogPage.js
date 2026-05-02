@@ -12,6 +12,11 @@ const blogPageSchema = new mongoose.Schema({
     required: true,
     default: 'Insights That Drive Success'
   },
+  heroHighlight: { 
+    type: String, 
+    required: true,
+    default: 'Drive Success'
+  },
   heroSubtitle: { 
     type: String, 
     required: true,
@@ -30,7 +35,8 @@ blogPageSchema.statics.getBlogPage = async function() {
     // Create default if not exists
     blogPage = await this.create({
       type: 'blogpage',
-      heroTitle: 'Insights That Drive Success',
+      heroTitle: 'Insights That',
+      heroHighlight: 'Drive Success',
       heroSubtitle: 'Expert articles, industry trends, and actionable insights to help you stay ahead in the digital age.'
     });
   }
