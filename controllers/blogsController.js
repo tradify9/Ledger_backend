@@ -102,7 +102,7 @@ export const getBlogById = async (req, res) => {
 
 export const createBlog = async (req, res) => {
   try {
-    const {
+const {
       title,
       shortDescription,
       content,
@@ -111,12 +111,16 @@ export const createBlog = async (req, res) => {
       author = 'Admin',
       status = 'draft',
       seoTitle,
-      seoDescription
+      seoDescription,
+      excerpt // Accept both 'excerpt' and 'shortDescription'
     } = req.body;
 
     if (!title || !content || !category) {
       return res.status(400).json({ message: 'Title, content, and category required' });
     }
+
+    // Use shortDescription if provided, otherwise fallback to excerpt (frontend compatibility)
+    const finalShortDescription = shortDescription || excerpt || '';
 
     // Parse tags array
     const tagsArray = Array.isArray(tags) ? tags : JSON.parse(tags || '[]');
@@ -128,11 +132,11 @@ export const createBlog = async (req, res) => {
     const words = content.replace(/<[^>]*>/g, '').split(/\s+/).length;
     const readTime = Math.ceil(words / 250);
 
-    // Handle featured image (file or URL)
+// Handle featured image (file or URL)
     let featuredImage = '';
     if (req.body.image_url) {
       // Validate URL starts with http/https
-    if (req.body.image_url.match(/^https?:\/\/.+/)) {
+      if (req.body.image_url.match(/^https?:\/\/.+/)) {
         featuredImage = req.body.image_url;
       } else {
         return res.status(400).json({ message: 'Invalid image URL format' });
@@ -148,10 +152,10 @@ export const createBlog = async (req, res) => {
       images = await uploadContentImages(req.files.images.map(f => f.path));
     }
 
-    const blogData = {
+const blogData = {
       title,
       slug,
-      shortDescription,
+      shortDescription: finalShortDescription,
       content,
       category,
       tags: tagsArray,
@@ -162,7 +166,7 @@ export const createBlog = async (req, res) => {
       status,
       readTime,
       seoTitle: seoTitle || title,
-      seoDescription: seoDescription || shortDescription,
+      seoDescription: seoDescription || finalShortDescription,
       ...(req.body.metaImage && { metaImage: req.body.metaImage })
     };
 
@@ -183,7 +187,12 @@ export const updateBlog = async (req, res) => {
     const blog = await Blog.findById(req.params.id);
     if (!blog) return res.status(404).json({ message: 'Blog not found' });
 
-    const updateData = req.body;
+const updateData = req.body;
+
+    // Handle both 'excerpt' and 'shortDescription' from frontend
+    if (updateData.excerpt && !updateData.shortDescription) {
+      updateData.shortDescription = updateData.excerpt;
+    }
 
     // Update slug only if title changed
     if (updateData.title && updateData.title !== blog.title) {
