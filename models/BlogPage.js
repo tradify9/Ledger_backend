@@ -45,5 +45,3 @@ blogPageSchema.statics.getBlogPage = async function() {
 };
 
 export default mongoose.model('BlogPage', blogPageSchema);
-
-
