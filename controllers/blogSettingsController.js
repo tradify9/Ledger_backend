@@ -4,6 +4,9 @@ import { protect } from '../middleware/auth.js';
 export const getBlogSettings = async (req, res) => {
   try {
     const blogPage = await BlogPage.getBlogPage();
+    if (!blogPage) {
+      return res.status(404).json({ message: 'Blog page settings not found' });
+    }
     res.json(blogPage);
   } catch (error) {
     console.error('Get blog settings error:', error);

@@ -35,7 +35,7 @@ blogPageSchema.statics.getBlogPage = async function() {
     // Create default if not exists
     blogPage = await this.create({
       type: 'blogpage',
-      heroTitle: 'Insights That',
+      heroTitle: 'Insights That Drive Success',
       heroHighlight: 'Drive Success',
       heroSubtitle: 'Expert articles, industry trends, and actionable insights to help you stay ahead in the digital age.'
     });

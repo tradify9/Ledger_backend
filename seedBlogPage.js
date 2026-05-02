@@ -14,7 +14,7 @@ mongoose.connect(process.env.MONGODB_URI)
 if (!blogPage) {
       await BlogPage.create({
         type: 'blogpage',
-        heroTitle: 'Insights That',
+        heroTitle: 'Insights That Drive Success',
         heroHighlight: 'Drive Success',
         heroSubtitle: 'Expert articles, industry trends, and actionable insights to help you stay ahead in the digital age.'
       });
