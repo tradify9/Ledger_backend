@@ -111,7 +111,7 @@ export const createBlog = async (req, res) => {
       excerpt
     } = req.body;
 
-    // Required check
+// Required check
     if (!title || !content) {
       return res.status(400).json({ message: 'Title and content are required' });
     }
@@ -120,16 +120,21 @@ export const createBlog = async (req, res) => {
       return res.status(400).json({ message: 'Category is required to publish' });
     }
 
-    // ✅ AUTO GENERATE shortDescription (NO ERROR)
+    // ✅ SHORT DESCRIPTION - ALWAYS GENERATE (ENSURES NO VALIDATION ERROR)
     let finalShortDescription = shortDescription || excerpt || '';
-
+    
+    // If still empty, generate from content - this fixes the validation error
     if (!finalShortDescription && content) {
       const plainText = content.replace(/<[^>]*>/g, '').trim();
       finalShortDescription = plainText.substring(0, 200);
-
       if (plainText.length > 200) {
         finalShortDescription += '...';
       }
+    }
+    
+// Final fallback to prevent undefined
+    if (!finalShortDescription) {
+      finalShortDescription = 'No description available';
     }
 
     // Safe tags
@@ -195,10 +200,22 @@ export const updateBlog = async (req, res) => {
 
     if (!blog) return res.status(404).json({ message: 'Blog not found' });
 
-    const updateData = req.body;
+const updateData = req.body;
 
+    // ✅ ALWAYS ENSURE shortDescription has a value
     if (updateData.excerpt && !updateData.shortDescription) {
       updateData.shortDescription = updateData.excerpt;
+    }
+    
+    // If no excerpt either but content exists, generate from content
+    if (!updateData.shortDescription && updateData.content) {
+      const plainText = updateData.content.replace(/<[^>]*>/g, '').trim();
+      updateData.shortDescription = plainText.substring(0, 200);
+    }
+    
+    // Final fallback
+    if (!updateData.shortDescription) {
+      updateData.shortDescription = 'No description available';
     }
 
     if (updateData.title && updateData.title !== blog.title) {

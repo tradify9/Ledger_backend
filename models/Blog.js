@@ -9,7 +9,7 @@ const blogSchema = new mongoose.Schema({
     unique: true 
   },
 
-  // ✅ optional field
+// ✅ shortDescription - optional but auto-generated in pre-save
   shortDescription: {
     type: String,
     default: ''
