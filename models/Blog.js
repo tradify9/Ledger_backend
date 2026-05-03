@@ -9,12 +9,10 @@ const blogSchema = new mongoose.Schema({
     unique: true 
   },
 
-  // ✅ FIXED: optional + auto generate
+  // ✅ optional field
   shortDescription: {
     type: String,
-    default: function () {
-      return this.content ? this.content.substring(0, 150) : "";
-    }
+    default: ''
   },
 
   content: { 
@@ -59,21 +57,14 @@ const blogSchema = new mongoose.Schema({
 
   readTime: { 
     type: Number, 
-    default: function () {
-      if (!this.content) return 1;
-      const words = this.content.split(/\s+/).length;
-      return Math.ceil(words / 200); // avg reading speed
-    }
+    default: 1
   },
 
-  // SEO Fields
   seoTitle: { type: String, default: '' },
 
-  seoDescription: {
-    type: String,
-    default: function () {
-      return this.shortDescription || "";
-    }
+  seoDescription: { 
+    type: String, 
+    default: '' 
   },
 
   metaImage: { type: String, default: '' }
@@ -81,7 +72,35 @@ const blogSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 
-// ✅ INDEXES (Performance optimized)
+// 🔥 AUTO HANDLE BEFORE SAVE (MOST IMPORTANT FIX)
+blogSchema.pre('save', function(next) {
+
+  // ✅ shortDescription auto generate
+  if (!this.shortDescription && this.content) {
+    const plainText = this.content.replace(/<[^>]*>/g, '').trim();
+    this.shortDescription = plainText.substring(0, 150);
+  }
+
+  // ✅ readTime auto calculate
+  if (this.content) {
+    const words = this.content.replace(/<[^>]*>/g, '').split(/\s+/).length;
+    this.readTime = Math.ceil(words / 200);
+  }
+
+  // ✅ SEO fallback
+  if (!this.seoDescription) {
+    this.seoDescription = this.shortDescription;
+  }
+
+  if (!this.seoTitle) {
+    this.seoTitle = this.title;
+  }
+
+  next();
+});
+
+
+// ✅ INDEXES
 blogSchema.index({ category: 1, status: 1 });
 blogSchema.index({ tags: 1 });
 blogSchema.index({ createdAt: -1 });
