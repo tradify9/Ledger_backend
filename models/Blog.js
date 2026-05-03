@@ -9,7 +9,7 @@ const blogSchema = new mongoose.Schema({
     unique: true 
   },
 
-// ✅ shortDescription - optional but auto-generated in pre-save
+// ✅ shortDescription - truly optional
   shortDescription: {
     type: String,
     default: ''
@@ -69,7 +69,10 @@ const blogSchema = new mongoose.Schema({
 
   metaImage: { type: String, default: '' }
 
-}, { timestamps: true });
+}, { 
+  timestamps: true,
+  validateBeforeSave: false
+});
 
 
 // 🔥 AUTO HANDLE BEFORE SAVE (MOST IMPORTANT FIX)
