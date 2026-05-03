@@ -1,17 +1,15 @@
+// routes/contactDetailsRoutes.js
 import express from 'express';
-import { protect } from '../middleware/auth.js';
-import { submitContact, getContacts, updateContactReply, deleteContact, updateContact } from '../controllers/contactsController.js';
+import { protect, admin } from '../middleware/auth.js';
+import { getContactDetails, updateContactDetails } from '../controllers/contactDetailsController.js';
 
 const router = express.Router();
 
-// Public submit
-router.post('/', submitContact);
+// Public route - anyone can view
+router.get('/', getContactDetails);
 
-// Protected admin
-router.use(protect);
-router.get('/', getContacts);
-router.put('/:id/reply', updateContactReply);
-router.put('/:id', updateContact);
-router.delete('/:id', deleteContact);
+// Protected admin routes
+router.use(protect, admin);
+router.put('/', updateContactDetails);
 
 export default router;

@@ -1,3 +1,4 @@
+// middleware/auth.js
 import jwt from 'jsonwebtoken';
 import Admin from '../models/Admin.js';
 
@@ -28,3 +29,47 @@ export const protect = async (req, res, next) => {
     res.status(401).json({ message: 'Not authorized, invalid token' });
   }
 };
+
+// Admin middleware - checks if user is authenticated as admin
+export const admin = async (req, res, next) => {
+  // First check if admin exists from protect middleware
+  if (!req.admin) {
+    return res.status(401).json({ message: 'Not authenticated as admin' });
+  }
+  
+  // Check if admin has admin role or is active
+  if (req.admin.role === 'admin' || req.admin.role === 'super-admin') {
+    next();
+  } else {
+    res.status(403).json({ message: 'Not authorized as an admin. Admin access required.' });
+  }
+};
+
+// Optional: Super admin only middleware
+export const superAdminOnly = async (req, res, next) => {
+  if (!req.admin) {
+    return res.status(401).json({ message: 'Not authenticated' });
+  }
+  
+  if (req.admin.role === 'super-admin') {
+    next();
+  } else {
+    res.status(403).json({ message: 'Super admin access required' });
+  }
+};
+
+// Optional: Check if admin is active
+export const isActive = async (req, res, next) => {
+  if (!req.admin) {
+    return res.status(401).json({ message: 'Not authenticated' });
+  }
+  
+  if (req.admin.isActive) {
+    next();
+  } else {
+    res.status(403).json({ message: 'Admin account is disabled. Please contact support.' });
+  }
+};
+
+// Combine multiple middlewares
+export const requireAdmin = [protect, admin, isActive];
