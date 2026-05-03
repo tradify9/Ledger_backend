@@ -39,7 +39,8 @@ export const updateFooter = async (req, res) => {
         runValidators: true 
       });
     }
-    res.json({ message: 'Footer updated successfully', footer });
+    // Return the footer directly to match getFooter response format
+    res.json(footer);
   } catch (error) {
     console.error('Footer update error:', error);
     res.status(500).json({ message: error.message });
