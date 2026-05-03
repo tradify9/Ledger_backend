@@ -131,10 +131,10 @@ export const updateAboutPage = async (req, res) => {
     // Update all fields
     Object.assign(page, updateData);
     
-    // Handle image uploads
+// Handle image uploads
     const imageFields = ['heroImage', 'storyImage1', 'storyImage2', 'storyImage3'];
     for (const field of imageFields) {
-      if (req.files && req.files[field]) {
+      if (req.files && req.files[field] && req.files[field][0]) {
         const file = req.files[field][0];
         const result = await uploadImage(file.path);
         page[field] = result.secure_url;
