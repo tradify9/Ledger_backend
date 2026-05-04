@@ -38,7 +38,9 @@ export const admin = async (req, res, next) => {
   }
   
   // Check if admin has admin role or is active
-  if (req.admin.role === 'admin' || req.admin.role === 'super-admin') {
+  // Also allow admins with undefined role (backwards compatibility for existing admins)
+  const userRole = req.admin.role || 'admin';
+  if (userRole === 'admin' || userRole === 'super-admin' || userRole === 'editor') {
     next();
   } else {
     res.status(403).json({ message: 'Not authorized as an admin. Admin access required.' });
@@ -64,7 +66,9 @@ export const isActive = async (req, res, next) => {
     return res.status(401).json({ message: 'Not authenticated' });
   }
   
-  if (req.admin.isActive) {
+  // Allow admins with undefined isActive field (backwards compatibility)
+  const isActiveStatus = req.admin.isActive !== undefined ? req.admin.isActive : true;
+  if (isActiveStatus) {
     next();
   } else {
     res.status(403).json({ message: 'Admin account is disabled. Please contact support.' });
