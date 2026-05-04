@@ -18,7 +18,10 @@ export const getFooter = async (req, res) => {
         whatsappText: 'WhatsApp',
         newsletterPlaceholder: 'Enter email',
         newsletterButtonText: 'Subscribe',
-        copyrightText: 'LEDGER ADVISORY. All rights reserved. | Back to Top'
+        copyrightText: 'LEDGER ADVISORY. All rights reserved. | Back to Top',
+        blogSectionTitle: 'Tax & Compliance Insights',
+        blogSectionSubtitle: 'Drive Success',
+        blogSectionDescription: 'Expert articles and updates to help you stay compliant and informed'
       });
     }
     res.json(footer);

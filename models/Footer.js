@@ -21,7 +21,11 @@ const footerSchema = new mongoose.Schema({
   whatsappText: { type: String, default: 'WhatsApp' },
   newsletterPlaceholder: { type: String, default: 'Enter email' },
   newsletterButtonText: { type: String, default: 'Subscribe' },
-  copyrightText: { type: String, default: 'LEDGER ADVISORY. All rights reserved. | Back to Top' }
+  copyrightText: { type: String, default: 'LEDGER ADVISORY. All rights reserved. | Back to Top' },
+  // Blog Hero Section Fields
+  blogSectionTitle: { type: String, default: 'Tax & Compliance Insights' },
+  blogSectionSubtitle: { type: String, default: 'Drive Success' },
+  blogSectionDescription: { type: String, default: 'Expert articles and updates to help you stay compliant and informed' }
 }, { timestamps: true });
 
 export default mongoose.model('Footer', footerSchema);
