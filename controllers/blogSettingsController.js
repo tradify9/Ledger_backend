@@ -23,7 +23,7 @@ export const updateBlogSettings = [
       
       console.log('Received update request:', { heroTitle, heroHighlight, heroSubtitle });
       
-      if (!heroTitle || !heroHighlight === undefined || !heroSubtitle) {
+      if (!heroTitle || heroHighlight === undefined || !heroSubtitle) {
         return res.status(400).json({ 
           message: 'heroTitle, heroHighlight, and heroSubtitle are required',
           received: { heroTitle, heroHighlight, heroSubtitle }
