@@ -46,7 +46,7 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit per file
+    fileSize: 25 * 1024 * 1024 // 25MB limit per file (increased from 5MB)
   }
 });
 
@@ -60,7 +60,7 @@ const adminUpload = upload.fields([
 const handleMulterError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'FILE_TOO_LARGE') {
-      return res.status(400).json({ message: 'File too large. Maximum size is 5MB' });
+      return res.status(400).json({ message: 'File too large. Maximum size is 25MB' });
     }
     return res.status(400).json({ message: err.message });
   }
