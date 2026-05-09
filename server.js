@@ -25,9 +25,9 @@ app.use(cors({
   origin: ['http://localhost:5173', 'https://palegreen-echidna-749052.hostingersite.com','https://ledgeradvisory.in'], 
   credentials: true 
 }));
-// Increase JSON limit to 50MB for large rich text content with images/videos
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// Increase body limits for long rich-text posts and larger admin payloads.
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 import fs from 'node:fs';
 import path from 'node:path';

@@ -18,7 +18,10 @@ export const getBlogs = async (req, res) => {
     const limitNum = parseInt(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    const filter = { status };
+    const filter = {};
+    if (status && status !== 'all') {
+      filter.status = status;
+    }
 
     if (q) {
       filter.$or = [
@@ -102,7 +105,7 @@ export const createBlog = async (req, res) => {
       title,
       shortDescription,
       content,
-      category,
+      category = 'General',
       tags = [],
       author = 'Admin',
       status = 'draft',
@@ -116,9 +119,7 @@ export const createBlog = async (req, res) => {
       return res.status(400).json({ message: 'Title and content are required' });
     }
 
-    if (status === 'published' && !category) {
-      return res.status(400).json({ message: 'Category is required to publish' });
-    }
+    const finalCategory = category?.trim() || 'General';
 
     // ✅ SHORT DESCRIPTION - ALWAYS GENERATE (ENSURES NO VALIDATION ERROR)
     let finalShortDescription = shortDescription || excerpt || '';
@@ -171,7 +172,7 @@ export const createBlog = async (req, res) => {
       slug,
       shortDescription: finalShortDescription,
       content,
-      category,
+      category: finalCategory,
       tags: tagsArray,
       featuredImage,
       images,
@@ -184,9 +185,7 @@ export const createBlog = async (req, res) => {
       metaImage: req.body.metaImage || ''
     });
 
-    const { _id, ...safeBlog } = blog.toObject();
-
-    res.status(201).json(safeBlog);
+    res.status(201).json(blog);
 
   } catch (error) {
     console.error('Create error:', error);
@@ -200,7 +199,10 @@ export const updateBlog = async (req, res) => {
 
     if (!blog) return res.status(404).json({ message: 'Blog not found' });
 
-const updateData = req.body;
+const updateData = { ...req.body };
+    if (!updateData.category?.trim()) {
+      updateData.category = blog.category || 'General';
+    }
 
     // ✅ ALWAYS ENSURE shortDescription has a value
     if (updateData.excerpt && !updateData.shortDescription) {
@@ -248,9 +250,7 @@ const updateData = req.body;
     Object.assign(blog, updateData);
     await blog.save();
 
-    const { _id, ...safeBlog } = blog.toObject();
-
-    res.json(safeBlog);
+    res.json(blog);
 
   } catch (error) {
     console.error('Update error:', error);
