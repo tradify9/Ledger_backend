@@ -2,12 +2,14 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import Service from '../models/Service.js';
 import { protect } from '../middleware/auth.js';
 import { 
   getServices, 
   getService, 
   createService, 
   updateService, 
+  updateServiceDetailHero,
   deleteService 
 } from '../controllers/servicesController.js';
 
@@ -83,6 +85,9 @@ router.post('/', adminUpload, handleMulterError, createService);
 
 // Update existing service
 router.put('/:id', adminUpload, handleMulterError, updateService);
+
+// Update detail hero only
+router.put('/:id/detail-hero', updateServiceDetailHero);
 
 // Delete service
 router.delete('/:id', deleteService);

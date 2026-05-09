@@ -9,6 +9,27 @@ const serviceSchema = new mongoose.Schema({
   
   // Hero image (main image)
   image: { type: String, default: '' },
+
+  // Service detail hero content
+  detailHero: {
+    enabled: { type: Boolean, default: true },
+    badgeText: { type: String, default: 'Premium Service' },
+    title: { type: String, default: 'Expert {serviceTitle} Solutions' },
+    subtitle: { type: String, default: 'Transform Your Business' },
+    description: { type: String, default: 'Expert {serviceTitle} solutions built for measurable results. Trusted by 500+ businesses.' },
+    buttonText: { type: String, default: 'Start Project' },
+    buttonLink: { type: String, default: '/contact' },
+    secondaryButtonText: { type: String, default: 'Free Consultation' },
+    secondaryButtonLink: { type: String, default: '/contact' },
+    showStatsBar: { type: Boolean, default: true },
+    showEnquiryForm: { type: Boolean, default: true },
+    statsData: [{
+      icon: { type: String, default: 'Users' },
+      label: { type: String, default: '' },
+      value: { type: String, default: '' },
+      color: { type: String, default: '#2563eb' }
+    }]
+  },
   
   // Gallery images
   images: [{ type: String, default: [] }],

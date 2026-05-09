@@ -31,6 +31,49 @@ const parseStructuredArray = (data, defaultStructure = {}) => {
   }
 };
 
+const defaultDetailHero = {
+  enabled: true,
+  badgeText: 'Premium Service',
+  title: 'Expert {serviceTitle} Solutions',
+  subtitle: 'Transform Your Business',
+  description: 'Expert {serviceTitle} solutions built for measurable results. Trusted by 500+ businesses.',
+  buttonText: 'Start Project',
+  buttonLink: '/contact',
+  secondaryButtonText: 'Free Consultation',
+  secondaryButtonLink: '/contact',
+  showStatsBar: true,
+  showEnquiryForm: true,
+  statsData: [
+    { icon: 'Users', label: 'Happy Clients', value: '500+', color: '#059669' },
+    { icon: 'Award', label: 'Years Exp.', value: '10+', color: '#2563eb' },
+    { icon: 'Briefcase', label: 'Projects', value: '1,200+', color: '#d97706' },
+    { icon: 'CheckCircle', label: 'Success Rate', value: '98%', color: '#0284c7' }
+  ]
+};
+
+const parseDetailHero = (data) => {
+  if (!data) return undefined;
+  try {
+    const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+    if (!parsed || typeof parsed !== 'object') return undefined;
+    return {
+      ...defaultDetailHero,
+      ...parsed,
+      statsData: Array.isArray(parsed.statsData)
+        ? parsed.statsData.map(stat => ({
+            icon: stat.icon || 'Users',
+            label: stat.label || '',
+            value: stat.value || '',
+            color: stat.color || '#2563eb'
+          }))
+        : defaultDetailHero.statsData
+    };
+  } catch (err) {
+    console.error('Parse detail hero error:', err.message);
+    return undefined;
+  }
+};
+
 // Get all services (PUBLIC)
 export const getServices = async (req, res) => {
   try {
@@ -127,6 +170,11 @@ export const createService = async (req, res) => {
       discount: Number(discount) || 0,
       companyName: companyName || '',
       rating: Number(rating) || 5,
+      detailHero: parseDetailHero(req.body.detailHero) || {
+        ...defaultDetailHero,
+        title: `Expert ${title || '{serviceTitle}'} Solutions`,
+        description: `Expert ${title || '{serviceTitle}'} solutions built for measurable results. Trusted by 500+ businesses.`
+      },
       pricingCards: pricingCards,
       professionals: professionals,
       features: features,
@@ -171,6 +219,10 @@ export const updateService = async (req, res) => {
     if (companyName !== undefined) service.companyName = companyName;
     if (governmentFees !== undefined) service.governmentFees = governmentFees;
     if (rating !== undefined) service.rating = Number(rating) || 5;
+    if (req.body.detailHero !== undefined) {
+      const detailHero = parseDetailHero(req.body.detailHero);
+      if (detailHero) service.detailHero = detailHero;
+    }
 
     // Handle main image update
     if (req.files && req.files.image && req.files.image[0]) {
@@ -248,5 +300,27 @@ export const deleteService = async (req, res) => {
   } catch (error) {
     console.error('Delete service error:', error);
     res.status(500).json({ message: 'Failed to delete service', error: error.message });
+  }
+};
+
+// Update only service detail hero (ADMIN)
+export const updateServiceDetailHero = async (req, res) => {
+  try {
+    const service = await Service.findById(req.params.id);
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    const detailHero = parseDetailHero(req.body.detailHero || req.body);
+    if (!detailHero) {
+      return res.status(400).json({ message: 'Invalid detail hero data' });
+    }
+
+    service.detailHero = detailHero;
+    await service.save();
+    res.status(200).json(service);
+  } catch (error) {
+    console.error('Update service detail hero error:', error);
+    res.status(500).json({ message: 'Failed to update service detail hero', error: error.message });
   }
 };
