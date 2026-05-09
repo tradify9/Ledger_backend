@@ -60,11 +60,14 @@ const aboutPageSchema = new mongoose.Schema({
   heroTitle: { type: String, default: 'Transforming Businesses Since 2009' },
   heroSubtitle: { type: String, default: "We're a team of passionate experts dedicated to helping businesses achieve their full potential through innovative solutions and strategic guidance." },
   heroImage: { type: String, default: '' },
+  heroTrustTitle: { type: String, default: 'Trusted by 500+' },
+  heroTrustSubtitle: { type: String, default: 'Companies worldwide' },
 
   // Stats Section
   stats: [statSchema],
 
   // Story Section
+  storyBadgeText: { type: String, default: 'Our Story' },
   storyTitle: { type: String, default: 'Our Story' },
   storyContent: { type: String, default: 'Founded in 2009 with a vision to transform business consulting.' },
   storyImage1: { type: String, default: '' },
@@ -73,11 +76,13 @@ const aboutPageSchema = new mongoose.Schema({
   storyHighlights: [highlightSchema],
 
   // Journey/Milestones Section
+  journeyBadgeText: { type: String, default: 'Our Journey' },
   journeyTitle: { type: String, default: '15 Years of Excellence' },
   journeySubtitle: { type: String, default: 'Key milestones that shaped our path to becoming industry leaders' },
   milestones: [milestoneSchema],
 
   // Core Values Section
+  valuesBadgeText: { type: String, default: 'Our Principles' },
   valuesTitle: { type: String, default: 'Core Values That Drive Us' },
   valuesSubtitle: { type: String, default: 'The principles that guide everything we do' },
   values: [valueSchema],
@@ -90,6 +95,7 @@ const aboutPageSchema = new mongoose.Schema({
   impactSubtitle: { type: String, default: 'Making a measurable difference for our clients worldwide' },
 
   // Testimonials Section
+  testimonialsBadgeText: { type: String, default: 'Testimonials' },
   testimonialsTitle: { type: String, default: 'What Our Clients Say' },
   testimonialsSubtitle: { type: String, default: 'Trusted by industry leaders across India' },
   testimonials: [testimonialSchema],

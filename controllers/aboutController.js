@@ -12,6 +12,8 @@ export const getAboutPage = async (req, res) => {
         heroTitle: 'Transforming Businesses Since 2009',
         heroSubtitle: "We're a team of passionate experts dedicated to helping businesses achieve their full potential through innovative solutions and strategic guidance.",
         heroImage: '',
+        heroTrustTitle: 'Trusted by 500+',
+        heroTrustSubtitle: 'Companies worldwide',
         
         stats: [
           { value: '200+', label: 'Projects Delivered', icon: 'Briefcase', color: 'blue' },
@@ -20,6 +22,7 @@ export const getAboutPage = async (req, res) => {
           { value: '$500M+', label: 'Value Generated', icon: 'DollarSign', color: 'purple' }
         ],
         
+        storyBadgeText: 'Our Story',
         storyTitle: 'Our Journey',
         storyContent: 'Founded in 2009 with a simple mission: to help businesses navigate complex challenges and achieve sustainable growth. What started as a team of three passionate consultants has grown into a global network of industry experts.',
         storyImage1: '',
@@ -32,6 +35,7 @@ export const getAboutPage = async (req, res) => {
           { icon: 'CheckCircle', title: 'Global Reach', description: '30+ countries' }
         ],
         
+        journeyBadgeText: 'Our Journey',
         journeyTitle: '15 Years of Excellence',
         journeySubtitle: 'Key milestones that shaped our path to becoming industry leaders',
         milestones: [
@@ -42,6 +46,7 @@ export const getAboutPage = async (req, res) => {
           { year: '2024', title: 'Industry Leadership', description: 'Recognized as top consulting firm', icon: 'Award' }
         ],
         
+        valuesBadgeText: 'Our Principles',
         valuesTitle: 'Core Values That Drive Us',
         valuesSubtitle: 'The principles that guide everything we do',
         values: [
@@ -64,6 +69,7 @@ export const getAboutPage = async (req, res) => {
         impactTitle: 'Our Impact in Numbers',
         impactSubtitle: 'Making a measurable difference for our clients worldwide',
         
+        testimonialsBadgeText: 'Testimonials',
         testimonialsTitle: 'What Our Clients Say',
         testimonialsSubtitle: 'Trusted by industry leaders across India',
         testimonials: [
