@@ -74,6 +74,13 @@ const parseDetailHero = (data) => {
   }
 };
 
+const parseBoolean = (value, defaultValue = false) => {
+  if (value === undefined || value === null || value === '') return defaultValue;
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') return value === 'true' || value === '1';
+  return Boolean(value);
+};
+
 // Get all services (PUBLIC)
 export const getServices = async (req, res) => {
   try {
@@ -105,7 +112,8 @@ export const createService = async (req, res) => {
 // Extract basic fields
     const {
       title, description, longDescription, category, price, discount, 
-      companyName, governmentFees, rating
+      companyName, governmentFees, rating, estimatedTime, serviceType,
+      deliveryFormat, isPopular, isFeatured, serviceColor
     } = req.body;
 
     // Validate required fields
@@ -155,6 +163,9 @@ export const createService = async (req, res) => {
     const process = parseStructuredArray(req.body.process, { step: 1, title: '', description: '', duration: '' });
     const documents = parseStructuredArray(req.body.documents, { title: '', description: '', icon: 'FileText' });
     const faq = parseStructuredArray(req.body.faq, { question: '', answer: '' });
+    const prerequisites = parseStructuredArray(req.body.prerequisites, { title: '', description: '' });
+    const certifications = parseStructuredArray(req.body.certifications, { title: '', issuer: '', year: '' });
+    const testimonials = parseStructuredArray(req.body.testimonials, { name: '', role: '', message: '', rating: 5 });
     const offers = parseStructuredArray(req.body.offers, { title: '', description: '', discount: 0 });
 
 // Create service object
@@ -170,6 +181,12 @@ export const createService = async (req, res) => {
       discount: Number(discount) || 0,
       companyName: companyName || '',
       rating: Number(rating) || 5,
+      estimatedTime: estimatedTime || '',
+      serviceType: ['one-time', 'subscription'].includes(serviceType) ? serviceType : 'one-time',
+      deliveryFormat: ['online', 'offline', 'hybrid'].includes(deliveryFormat) ? deliveryFormat : 'online',
+      isPopular: parseBoolean(isPopular),
+      isFeatured: parseBoolean(isFeatured),
+      serviceColor: serviceColor || '#2563eb',
       detailHero: parseDetailHero(req.body.detailHero) || {
         ...defaultDetailHero,
         title: `Expert ${title || '{serviceTitle}'} Solutions`,
@@ -183,6 +200,9 @@ export const createService = async (req, res) => {
       process: process,
       documents: documents,
       faq: faq,
+      prerequisites: prerequisites,
+      certifications: certifications,
+      testimonials: testimonials,
       offers: offers
     };
 
@@ -206,7 +226,8 @@ export const updateService = async (req, res) => {
 // Extract basic fields
     const {
       title, description, longDescription, category, price, discount,
-      companyName, governmentFees, rating
+      companyName, governmentFees, rating, estimatedTime, serviceType,
+      deliveryFormat, isPopular, isFeatured, serviceColor
     } = req.body;
 
     // Update basic fields
@@ -219,6 +240,12 @@ export const updateService = async (req, res) => {
     if (companyName !== undefined) service.companyName = companyName;
     if (governmentFees !== undefined) service.governmentFees = governmentFees;
     if (rating !== undefined) service.rating = Number(rating) || 5;
+    if (estimatedTime !== undefined) service.estimatedTime = estimatedTime;
+    if (serviceType !== undefined && ['one-time', 'subscription'].includes(serviceType)) service.serviceType = serviceType;
+    if (deliveryFormat !== undefined && ['online', 'offline', 'hybrid'].includes(deliveryFormat)) service.deliveryFormat = deliveryFormat;
+    if (isPopular !== undefined) service.isPopular = parseBoolean(isPopular);
+    if (isFeatured !== undefined) service.isFeatured = parseBoolean(isFeatured);
+    if (serviceColor !== undefined) service.serviceColor = serviceColor || '#2563eb';
     if (req.body.detailHero !== undefined) {
       const detailHero = parseDetailHero(req.body.detailHero);
       if (detailHero) service.detailHero = detailHero;
@@ -275,6 +302,15 @@ export const updateService = async (req, res) => {
     }
     if (req.body.faq !== undefined) {
       service.faq = parseStructuredArray(req.body.faq, { question: '', answer: '' });
+    }
+    if (req.body.prerequisites !== undefined) {
+      service.prerequisites = parseStructuredArray(req.body.prerequisites, { title: '', description: '' });
+    }
+    if (req.body.certifications !== undefined) {
+      service.certifications = parseStructuredArray(req.body.certifications, { title: '', issuer: '', year: '' });
+    }
+    if (req.body.testimonials !== undefined) {
+      service.testimonials = parseStructuredArray(req.body.testimonials, { name: '', role: '', message: '', rating: 5 });
     }
     if (req.body.offers !== undefined) {
       service.offers = parseStructuredArray(req.body.offers, { title: '', description: '', discount: 0 });

@@ -42,6 +42,20 @@ const serviceSchema = new mongoose.Schema({
   // Company & Rating
   companyName: { type: String, default: '' },
   rating: { type: Number, default: 5, min: 0, max: 5 },
+  estimatedTime: { type: String, default: '' },
+  serviceType: {
+    type: String,
+    enum: ['one-time', 'subscription'],
+    default: 'one-time'
+  },
+  deliveryFormat: {
+    type: String,
+    enum: ['online', 'offline', 'hybrid'],
+    default: 'online'
+  },
+  isPopular: { type: Boolean, default: false },
+  isFeatured: { type: Boolean, default: false },
+  serviceColor: { type: String, default: '#2563eb' },
   
   // Pricing Cards
   pricingCards: [{
@@ -97,6 +111,24 @@ const serviceSchema = new mongoose.Schema({
   faq: [{
     question: { type: String, default: '' },
     answer: { type: String, default: '' }
+  }],
+
+  prerequisites: [{
+    title: { type: String, default: '' },
+    description: { type: String, default: '' }
+  }],
+
+  certifications: [{
+    title: { type: String, default: '' },
+    issuer: { type: String, default: '' },
+    year: { type: String, default: '' }
+  }],
+
+  testimonials: [{
+    name: { type: String, default: '' },
+    role: { type: String, default: '' },
+    message: { type: String, default: '' },
+    rating: { type: Number, default: 5, min: 0, max: 5 }
   }],
   
   // Offers
