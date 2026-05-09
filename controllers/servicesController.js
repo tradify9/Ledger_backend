@@ -260,22 +260,19 @@ export const updateService = async (req, res) => {
       service.image = result.secure_url;
     } else if (req.body.image_url && req.body.image_url.match(/^https?:\/\/.+/)) {
       service.image = req.body.image_url;
+    } else if (parseBoolean(req.body.removeImage)) {
+      service.image = '';
     }
 
-    // Handle gallery images (append new ones)
+    // Handle gallery images (replace retained URLs, then append new uploads)
+    if (req.body.images !== undefined) {
+      service.images = safeParseArray(req.body.images);
+    }
+
     if (req.files && req.files.images && req.files.images.length > 0) {
       const imagePaths = req.files.images.map(file => file.path);
       const newImages = await uploadServiceImages(imagePaths);
       service.images = [...(service.images || []), ...newImages];
-    } else if (req.body.images) {
-      try {
-        const newImages = JSON.parse(req.body.images);
-        if (Array.isArray(newImages)) {
-          service.images = [...(service.images || []), ...newImages];
-        }
-      } catch (err) {
-        console.error('Parse images error:', err.message);
-      }
     }
 
     // Parse and update JSON arrays if provided
