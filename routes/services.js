@@ -10,6 +10,7 @@ import {
   createService, 
   updateService, 
   updateServiceDetailHero,
+  updateServiceDetailContent,
   deleteService 
 } from '../controllers/servicesController.js';
 
@@ -88,6 +89,9 @@ router.put('/:id', adminUpload, handleMulterError, updateService);
 
 // Update detail hero only
 router.put('/:id/detail-hero', updateServiceDetailHero);
+
+// Update detail content only
+router.put('/:id/detail-content', updateServiceDetailContent);
 
 // Delete service
 router.delete('/:id', deleteService);

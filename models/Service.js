@@ -30,6 +30,24 @@ const serviceSchema = new mongoose.Schema({
       color: { type: String, default: '#2563eb' }
     }]
   },
+
+  // Service detail page copy outside the hero
+  detailContent: {
+    sidebarFeaturesTitle: { type: String, default: 'Key Features' },
+    featuresEyebrow: { type: String, default: 'What You Get' },
+    featuresTitle: { type: String, default: 'Everything you need to succeed' },
+    ctaEyebrow: { type: String, default: 'Get Started Today' },
+    ctaTitle: { type: String, default: 'Ready to transform your business?' },
+    ctaDescription: { type: String, default: 'Book a free consultation with our experts and take the first step toward measurable growth.' },
+    ctaPrimaryText: { type: String, default: 'Book Free Consultation' },
+    ctaPrimaryLink: { type: String, default: '/contact' },
+    ctaSecondaryText: { type: String, default: 'Explore More Services' },
+    ctaSecondaryLink: { type: String, default: '/services' },
+    trustBadges: [{
+      icon: { type: String, default: 'Shield' },
+      text: { type: String, default: '' }
+    }]
+  },
   
   // Gallery images
   images: [{ type: String, default: [] }],

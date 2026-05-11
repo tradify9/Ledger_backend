@@ -51,6 +51,24 @@ const defaultDetailHero = {
   ]
 };
 
+const defaultDetailContent = {
+  sidebarFeaturesTitle: 'Key Features',
+  featuresEyebrow: 'What You Get',
+  featuresTitle: 'Everything you need to succeed',
+  ctaEyebrow: 'Get Started Today',
+  ctaTitle: 'Ready to transform your business?',
+  ctaDescription: 'Book a free consultation with our experts and take the first step toward measurable growth.',
+  ctaPrimaryText: 'Book Free Consultation',
+  ctaPrimaryLink: '/contact',
+  ctaSecondaryText: 'Explore More Services',
+  ctaSecondaryLink: '/services',
+  trustBadges: [
+    { icon: 'Shield', text: 'ISO-certified processes' },
+    { icon: 'Zap', text: 'Results within 30 days' },
+    { icon: 'Users', text: '500+ satisfied clients' }
+  ]
+};
+
 const parseDetailHero = (data) => {
   if (!data) return undefined;
   try {
@@ -70,6 +88,27 @@ const parseDetailHero = (data) => {
     };
   } catch (err) {
     console.error('Parse detail hero error:', err.message);
+    return undefined;
+  }
+};
+
+const parseDetailContent = (data) => {
+  if (!data) return undefined;
+  try {
+    const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+    if (!parsed || typeof parsed !== 'object') return undefined;
+    return {
+      ...defaultDetailContent,
+      ...parsed,
+      trustBadges: Array.isArray(parsed.trustBadges)
+        ? parsed.trustBadges.map(badge => ({
+            icon: badge.icon || 'Shield',
+            text: badge.text || ''
+          })).filter(badge => badge.text)
+        : defaultDetailContent.trustBadges
+    };
+  } catch (err) {
+    console.error('Parse detail content error:', err.message);
     return undefined;
   }
 };
@@ -192,6 +231,7 @@ export const createService = async (req, res) => {
         title: `Expert ${title || '{serviceTitle}'} Solutions`,
         description: `Expert ${title || '{serviceTitle}'} solutions built for measurable results. Trusted by 500+ businesses.`
       },
+      detailContent: parseDetailContent(req.body.detailContent) || defaultDetailContent,
       pricingCards: pricingCards,
       professionals: professionals,
       features: features,
@@ -249,6 +289,10 @@ export const updateService = async (req, res) => {
     if (req.body.detailHero !== undefined) {
       const detailHero = parseDetailHero(req.body.detailHero);
       if (detailHero) service.detailHero = detailHero;
+    }
+    if (req.body.detailContent !== undefined) {
+      const detailContent = parseDetailContent(req.body.detailContent);
+      if (detailContent) service.detailContent = detailContent;
     }
 
     // Handle main image update
@@ -355,5 +399,27 @@ export const updateServiceDetailHero = async (req, res) => {
   } catch (error) {
     console.error('Update service detail hero error:', error);
     res.status(500).json({ message: 'Failed to update service detail hero', error: error.message });
+  }
+};
+
+// Update only service detail content (ADMIN)
+export const updateServiceDetailContent = async (req, res) => {
+  try {
+    const service = await Service.findById(req.params.id);
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    const detailContent = parseDetailContent(req.body.detailContent || req.body);
+    if (!detailContent) {
+      return res.status(400).json({ message: 'Invalid detail content data' });
+    }
+
+    service.detailContent = detailContent;
+    await service.save();
+    res.status(200).json(service);
+  } catch (error) {
+    console.error('Update service detail content error:', error);
+    res.status(500).json({ message: 'Failed to update service detail content', error: error.message });
   }
 };
