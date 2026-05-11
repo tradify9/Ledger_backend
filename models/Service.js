@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const serviceSchema = new mongoose.Schema({
 // Basic Info
   title: { type: String, required: true },
+  slug: { type: String, trim: true, unique: true, sparse: true },
   description: { type: String, default: '' },
   longDescription: { type: String, default: '' }, // Rich content for service detail page
   category: { type: String, default: 'General' },

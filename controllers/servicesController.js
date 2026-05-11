@@ -1,5 +1,7 @@
 import Service from '../models/Service.js';
 import { uploadImage, uploadServiceImages } from '../utils/cloudinary.js';
+import { generateUniqueSlug, slugify } from '../utils/slugify.js';
+import mongoose from 'mongoose';
 
 // Helper function to safely parse JSON arrays
 const safeParseArray = (data, defaultValue = []) => {
@@ -120,10 +122,24 @@ const parseBoolean = (value, defaultValue = false) => {
   return Boolean(value);
 };
 
+const generateServiceSlug = async (title, existingId = null) => {
+  const baseTitle = slugify(title) ? title : `service-${Date.now()}`;
+  return generateUniqueSlug(Service, baseTitle, existingId);
+};
+
+const ensureServiceSlug = async (service) => {
+  if (!service.slug) {
+    service.slug = await generateServiceSlug(service.title, service._id);
+    await service.save();
+  }
+  return service;
+};
+
 // Get all services (PUBLIC)
 export const getServices = async (req, res) => {
   try {
     const services = await Service.find().sort({ createdAt: -1 });
+    await Promise.all(services.map(service => ensureServiceSlug(service)));
     res.status(200).json(services);
   } catch (error) {
     console.error('Get services error:', error);
@@ -134,10 +150,26 @@ export const getServices = async (req, res) => {
 // Get single service by ID (PUBLIC)
 export const getService = async (req, res) => {
   try {
-    const service = await Service.findById(req.params.id);
+    const { id } = req.params;
+    let service = null;
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      service = await Service.findById(id);
+    }
+
+    if (!service) {
+      service = await Service.findOne({ slug: id });
+    }
+
+    if (!service) {
+      const services = await Service.find();
+      service = services.find(item => slugify(item.title) === id) || null;
+    }
+
     if (!service) {
       return res.status(404).json({ message: 'Service not found' });
     }
+    await ensureServiceSlug(service);
     res.status(200).json(service);
   } catch (error) {
     console.error('Get service error:', error);
@@ -210,6 +242,7 @@ export const createService = async (req, res) => {
 // Create service object
     const serviceData = {
       title: title || '',
+      slug: await generateServiceSlug(title || 'service'),
       description: description || '',
       longDescription: richContent || '',
       category: category || 'General',
@@ -271,7 +304,11 @@ export const updateService = async (req, res) => {
     } = req.body;
 
     // Update basic fields
+    const titleChanged = title !== undefined && title !== service.title;
     if (title !== undefined) service.title = title;
+    if (titleChanged || !service.slug) {
+      service.slug = await generateServiceSlug(title, service._id);
+    }
     if (description !== undefined) service.description = description;
     if (longDescription !== undefined) service.longDescription = longDescription;
     if (category !== undefined) service.category = category;
