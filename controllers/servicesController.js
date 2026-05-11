@@ -423,3 +423,29 @@ export const updateServiceDetailContent = async (req, res) => {
     res.status(500).json({ message: 'Failed to update service detail content', error: error.message });
   }
 };
+
+// Update only service detail features / "What You Get" cards (ADMIN)
+export const updateServiceDetailFeatures = async (req, res) => {
+  try {
+    const service = await Service.findById(req.params.id);
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    const featuresInput = req.body.features !== undefined ? req.body.features : req.body;
+    const features = Array.isArray(featuresInput)
+      ? featuresInput.map(item => ({
+          title: item?.title || '',
+          description: item?.description || '',
+          icon: item?.icon || 'CheckCircle'
+        }))
+      : parseStructuredArray(featuresInput, { title: '', description: '', icon: 'CheckCircle' });
+
+    service.features = features;
+    await service.save();
+    res.status(200).json(service);
+  } catch (error) {
+    console.error('Update service detail features error:', error);
+    res.status(500).json({ message: 'Failed to update service detail features', error: error.message });
+  }
+};
