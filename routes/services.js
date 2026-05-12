@@ -12,6 +12,7 @@ import {
   updateServiceDetailHero,
   updateServiceDetailContent,
   updateServiceDetailFeatures,
+  updateServiceDetailPricing,
   deleteService 
 } from '../controllers/servicesController.js';
 
@@ -96,6 +97,9 @@ router.put('/:id/detail-content', updateServiceDetailContent);
 
 // Update detail features only
 router.put('/:id/detail-features', updateServiceDetailFeatures);
+
+// Update detail pricing only
+router.put('/:id/detail-pricing', updateServiceDetailPricing);
 
 // Delete service
 router.delete('/:id', deleteService);

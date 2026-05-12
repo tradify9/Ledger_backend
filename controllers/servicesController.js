@@ -57,6 +57,10 @@ const defaultDetailContent = {
   sidebarFeaturesTitle: 'Key Features',
   featuresEyebrow: 'What You Get',
   featuresTitle: 'Everything you need to succeed',
+  pricingEyebrow: 'Pricing Plans',
+  pricingTitle: 'Choose Your Plan',
+  clientMetricLabel: 'Clients',
+  clientMetricValue: '500+',
   ctaEyebrow: 'Get Started Today',
   ctaTitle: 'Ready to transform your business?',
   ctaDescription: 'Book a free consultation with our experts and take the first step toward measurable growth.',
@@ -484,5 +488,39 @@ export const updateServiceDetailFeatures = async (req, res) => {
   } catch (error) {
     console.error('Update service detail features error:', error);
     res.status(500).json({ message: 'Failed to update service detail features', error: error.message });
+  }
+};
+
+// Update only service detail pricing cards and pricing headings (ADMIN)
+export const updateServiceDetailPricing = async (req, res) => {
+  try {
+    const service = await Service.findById(req.params.id);
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    const input = req.body.pricingCards !== undefined ? req.body.pricingCards : [];
+    const pricingCards = Array.isArray(input)
+      ? input.map(item => ({
+          title: item?.title || '',
+          value: item?.value || '',
+          icon: item?.icon || 'Tag',
+          color: item?.color || '#10b981'
+        }))
+      : parseStructuredArray(input, { title: '', value: '', icon: 'Tag', color: '#10b981' });
+
+    service.pricingCards = pricingCards;
+
+    const detailContent = parseDetailContent({
+      ...(service.detailContent?.toObject?.() || service.detailContent || {}),
+      ...(req.body.detailContent || {})
+    });
+    if (detailContent) service.detailContent = detailContent;
+
+    await service.save();
+    res.status(200).json(service);
+  } catch (error) {
+    console.error('Update service detail pricing error:', error);
+    res.status(500).json({ message: 'Failed to update service detail pricing', error: error.message });
   }
 };
